@@ -1,0 +1,3457 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#F6F5EF">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Almanca">
+<link rel="icon" type="image/png" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<title>ÖSD Almanca Kelime Öğrenme Sistemi</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Inter:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#F6F5EF; --surface:#FFFFFF; --surface-2:#EFEDE3;
+    --ink:#232A25; --ink-soft:#6B7570; --line:#E3E0D2;
+    --teal:#1F7A6C; --teal-dark:#155A50; --teal-tint:#E4F1EC;
+    --amber:#E29A3B; --amber-tint:#FBEEDA;
+    --coral:#D96C4F; --coral-tint:#FBEAE4;
+    --green:#3F9142; --green-tint:#E7F3E4;
+    --radius:18px;
+    --shadow: 0 1px 2px rgba(35,42,37,0.04), 0 8px 24px rgba(35,42,37,0.06);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{background:var(--bg);color:var(--ink);font-family:'Inter',system-ui,sans-serif;-webkit-font-smoothing:antialiased;min-height:100vh;}
+  #app{max-width:760px;margin:0 auto;padding:20px 16px 64px;}
+  .eyebrow{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--teal-dark);font-weight:600;}
+  h1,h2,h3{font-family:'Fraunces',serif; margin:0; font-weight:600;}
+  .top{display:flex;align-items:center;justify-content:space-between;padding:6px 2px 22px;}
+  .brand{display:flex;flex-direction:column;gap:3px;}
+  .brand h1{font-size:20px;letter-spacing:-.01em;}
+  .reset-btn{background:none;border:1px solid var(--line);color:var(--ink-soft);font-family:'Inter';font-size:12px;padding:7px 12px;border-radius:999px;cursor:pointer;}
+  .reset-btn:hover{border-color:var(--coral);color:var(--coral);}
+  .path{position:relative;padding:8px 0 8px 34px;}
+  .path::before{content:'';position:absolute;left:15px;top:26px;bottom:26px;width:2px;background:repeating-linear-gradient(to bottom, var(--line) 0 6px, transparent 6px 12px);}
+  .node{position:relative;display:flex;gap:16px;align-items:flex-start;margin-bottom:14px;}
+  .node-dot{position:absolute;left:-34px;top:2px;width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'IBM Plex Mono';font-size:12px;font-weight:600;background:var(--surface);border:2px solid var(--line);color:var(--ink-soft);z-index:1;}
+  .node-dot.done{background:var(--teal);border-color:var(--teal);color:#fff;}
+  .node-dot.current{background:var(--amber-tint);border-color:var(--amber);color:var(--amber);}
+  .card-module{flex:1;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:14px 16px;box-shadow:var(--shadow);cursor:pointer;transition:transform .12s ease;}
+  .card-module:not(.locked):hover{transform:translateY(-1px);}
+  .card-module-top{display:flex;justify-content:space-between;align-items:baseline;gap:8px;}
+  .card-module h3{font-size:16px;}
+  .card-module .cat{font-size:12px;color:var(--ink-soft);margin-top:2px;}
+  .progress-track{height:5px;background:var(--surface-2);border-radius:99px;margin-top:10px;overflow:hidden;}
+  .progress-fill{height:100%;background:var(--teal);border-radius:99px;}
+  .pill{font-family:'IBM Plex Mono';font-size:11px;color:var(--ink-soft);background:var(--surface-2);padding:2px 8px;border-radius:99px;white-space:nowrap;}
+  .pill.done{background:var(--green-tint);color:var(--green);}
+  .color-picker{display:flex;flex-wrap:wrap;align-items:center;gap:8px;}
+  .color-dot{width:26px;height:26px;border-radius:99px;border:2px solid var(--surface);box-shadow:0 0 0 1.5px var(--line);cursor:pointer;padding:0;background:var(--cdot,var(--surface-2));}
+  .color-dot.none{background:var(--surface);position:relative;}
+  .color-dot.none::after{content:'';position:absolute;left:50%;top:3px;bottom:3px;width:1.5px;background:var(--ink-soft);transform:rotate(45deg);}
+  .color-dot.active{box-shadow:0 0 0 2px var(--ink);}
+  .color-mini{display:inline-block;width:9px;height:9px;border-radius:99px;background:var(--cdot);margin-right:6px;vertical-align:middle;}
+  .color-chip{display:inline-flex;align-items:center;gap:5px;font-family:'IBM Plex Mono';font-size:10px;font-weight:600;padding:3px 9px;border-radius:99px;letter-spacing:.05em;text-transform:uppercase;color:#fff;}
+  .lesson-head{margin-bottom:18px;}
+  .lesson-head-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;gap:8px;flex-wrap:wrap;}
+  .back-link{font-size:13px;color:var(--ink-soft);cursor:pointer;text-decoration:none;}
+  .back-link:hover{color:var(--teal-dark);}
+  .stage-badge{font-family:'IBM Plex Mono';font-size:11px;font-weight:600;letter-spacing:.06em;background:var(--teal-tint);color:var(--teal-dark);padding:4px 10px;border-radius:99px;}
+  .stage-badge.color-tag{color:#fff;}
+  .stage-badge.example-tag{background:var(--teal);color:#fff;}
+  .rep-track{height:6px;background:var(--surface-2);border-radius:99px;overflow:hidden;}
+  .rep-fill{height:100%;background:linear-gradient(90deg,var(--teal),var(--amber));border-radius:99px;transition:width .3s ease;}
+  .lesson-title{font-size:22px;margin-top:10px;}
+  .stage-card{background:var(--surface);border:1px solid var(--line);border-radius:24px;padding:32px 24px;box-shadow:var(--shadow);text-align:center;min-height:260px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;position:relative;}
+  .word-de{font-family:'Fraunces',serif;font-size:38px;font-weight:600;letter-spacing:-.01em;}
+  .word-tr{font-size:19px;color:var(--teal-dark);font-weight:500;}
+
+  .ring-wrap{position:relative;width:110px;height:110px;margin:0 auto;}
+  .ring-wrap svg{width:100%;height:100%;transform:rotate(-90deg);}
+  .ring-bg{fill:none;stroke:var(--surface-2);stroke-width:5;}
+  .ring-fg{fill:none;stroke:var(--amber);stroke-width:5;stroke-linecap:round;transition:stroke-dashoffset .1s linear;}
+  .ring-center{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;}
+  .hom-word-block{width:100%;max-width:100%;padding:0 8px;text-align:center;box-sizing:border-box;}
+  .hom-word-block .word-de{font-size:clamp(24px, 6.5vw, 36px);word-break:break-word;overflow-wrap:anywhere;line-height:1.15;margin-bottom:6px;}
+  .hom-word-block .word-tr{font-size:clamp(15px, 4vw, 19px);word-break:break-word;overflow-wrap:anywhere;line-height:1.2;}
+
+  .word-example{margin-top:8px;padding:8px 12px;background:rgba(0,0,0,0.04);border-radius:10px;border-left:3px solid var(--amber);text-align:left;}
+  .word-example .we-de{font-style:italic;font-size:13px;line-height:1.4;}
+  .word-example .we-tr{font-size:11px;color:var(--ink-soft);margin-top:3px;}
+  .word-example.mini{padding:5px 9px;margin-top:5px;}
+  .word-example.mini .we-de{font-size:12px;}
+  .word-example.mini .we-tr{font-size:10px;}
+  .word-example.big{padding:12px 16px;margin-top:14px;}
+  .word-example.big .we-de{font-size:15px;}
+  .word-example.big .we-tr{font-size:12px;}
+  .word-example.huge{padding:16px 20px;margin-top:16px;background:rgba(31,122,108,0.06);border-left-width:4px;}
+  .word-example.huge .we-de{font-size:17px;line-height:1.45;}
+  .word-example.huge .we-tr{font-size:13px;margin-top:6px;}
+
+  .btn{font-family:'Inter';font-weight:600;font-size:14px;border:none;border-radius:12px;padding:12px 22px;cursor:pointer;transition:transform .08s ease, background .15s ease;}
+  .btn:active{transform:scale(.97);}
+  .btn-primary{background:var(--teal);color:#fff;}
+  .btn-primary:hover{background:var(--teal-dark);}
+  .btn-ghost{background:var(--surface-2);color:var(--ink);}
+  .btn-ghost:hover{background:var(--line);}
+  .btn-example{background:var(--surface);color:var(--teal-dark);border:1.5px solid var(--teal);}
+  .btn-example:hover{background:var(--teal-tint);}
+  .btn-row{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;}
+  .btn:disabled{opacity:.45;cursor:not-allowed;}
+  .input-row{display:flex;gap:8px;width:100%;max-width:340px;}
+  input[type=text],input[type=password]{flex:1;font-family:'Inter';font-size:16px;padding:12px 14px;border-radius:12px;border:1.5px solid var(--line);background:var(--bg);color:var(--ink);}
+  input[type=text]:focus,input[type=password]:focus{outline:none;border-color:var(--teal);}
+  textarea.bulk-input{width:100%;font-family:'IBM Plex Mono',monospace;font-size:13.5px;line-height:1.6;padding:12px 14px;border-radius:12px;border:1.5px solid var(--line);background:var(--bg);color:var(--ink);resize:vertical;min-height:120px;}
+  textarea.bulk-input:focus{outline:none;border-color:var(--teal);}
+  .feedback{font-size:14px;font-weight:600;min-height:20px;}
+  .feedback.ok{color:var(--green);}
+  .feedback.bad{color:var(--coral);}
+  .hint{font-size:12px;color:var(--ink-soft);}
+  .match-grid{display:flex;gap:14px;width:100%;justify-content:center;}
+  .match-col{display:flex;flex-direction:column;gap:8px;flex:1 1 0;min-width:0;max-width:280px;}
+  .match-tile{overflow-wrap:anywhere;word-break:break-word;hyphens:auto;background:var(--surface-2);border:1.5px solid transparent;border-radius:10px;padding:10px 12px;font-size:14px;cursor:pointer;text-align:left;transition:all .12s ease;}
+  .match-tile.selected{border-color:var(--amber);background:var(--amber-tint);}
+  .match-tile.correct{border-color:var(--green);background:var(--green-tint);color:var(--green);cursor:default;}
+  .match-tile.wrong{border-color:var(--coral);background:var(--coral-tint);}
+  .mc-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;width:100%;max-width:420px;}
+  .mc-opt{overflow-wrap:anywhere;word-break:break-word;background:var(--surface-2);border:1.5px solid transparent;border-radius:12px;padding:12px 10px;font-size:14px;cursor:pointer;text-align:center;}
+  .mc-opt.correct{border-color:var(--green);background:var(--green-tint);color:var(--green);}
+  .mc-opt.wrong{border-color:var(--coral);background:var(--coral-tint);color:var(--coral);}
+  .mc-opt.disabled{cursor:default;}
+  .example-block{width:100%;text-align:left;background:var(--surface-2);border-radius:14px;padding:16px 18px;}
+  .example-block.word-selected{background:var(--amber-tint);border:1.5px solid var(--amber);}
+  .example-de{font-family:'Fraunces',serif;font-size:19px;margin-bottom:4px;}
+  .example-tr{font-size:14px;color:var(--ink-soft);}
+  .counter{font-family:'IBM Plex Mono';font-size:12px;color:var(--ink-soft);}
+  .score-tag{font-family:'IBM Plex Mono';font-size:13px;font-weight:600;}
+  .complete-wrap{text-align:center;padding:50px 16px;}
+  .complete-wrap h2{font-size:26px;margin-bottom:8px;}
+  .complete-wrap p{color:var(--ink-soft);font-size:14px;margin-bottom:20px;}
+  .empty-note{text-align:center;color:var(--ink-soft);font-size:13px;padding:30px 0;}
+  .lesson-color-dot{display:inline-block;width:11px;height:11px;border-radius:50%;vertical-align:middle;}
+  /* ---- Kelime satırı (telefonda sığması için sarmalanır) ---- */
+  .wrow{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;flex-wrap:wrap;}
+  .wrow-main{display:flex;align-items:flex-start;gap:10px;flex:1 1 180px;min-width:0;}
+  .wrow-side{display:flex;flex-direction:column;align-items:flex-end;gap:6px;flex:0 1 auto;max-width:100%;}
+  .wrow-btns{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end;}
+  .sent-panel{margin:-2px 0 10px;padding:12px;border-radius:14px;background:var(--surface);border:1px solid var(--line);}
+  .example-de,.example-tr,.word-de,.word-tr,.cat,.hint{overflow-wrap:anywhere;word-break:break-word;}
+  [data-sent-item]{flex-wrap:wrap;}
+  [data-sent-item] > div:first-child{flex:1 1 180px;min-width:0;}
+  .top{flex-wrap:wrap;gap:10px;}
+  .card-module-top{flex-wrap:wrap;}
+  .card-module-top h3{min-width:0;overflow-wrap:anywhere;}
+  img,svg,video{max-width:100%;}
+  @media (max-width:560px){
+    #app{padding:16px 12px 56px;}
+    .wrow-side{width:100%;flex-direction:row;align-items:center;justify-content:space-between;flex-wrap:wrap;}
+    .wrow-btns{justify-content:flex-start;}
+    [data-sent-item] > div:last-child{width:100%;align-items:flex-start;}
+    [data-sent-item] > div:last-child > div{justify-content:flex-start;}
+    .example-block{padding:14px;}
+    .stage-card{padding:24px 16px;}
+    .btn{padding:11px 16px;}
+  }
+  @media (max-width:480px){
+    .word-de{font-size:30px;}
+    .mc-grid{grid-template-columns:1fr;}
+  }
+</style>
+</head>
+<body>
+<div id="app"></div>
+
+<script>
+/* =========================================================
+   YARDIMCI FONKSİYONLAR
+   ========================================================= */
+function escapeHtml(s){
+  return String(s==null?'':s).replace(/[&<>"']/g, c=>({
+    '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+  }[c]));
+}
+const esc = escapeHtml;
+
+function deColorStyle(hex){ return hex ? 'color:'+hex+';' : ''; }
+function hexToRgbA(hex, alpha){
+  if(!hex) return 'rgba(0,0,0,0)';
+  const r = parseInt(hex.slice(1,3),16);
+  const g = parseInt(hex.slice(3,5),16);
+  const b = parseInt(hex.slice(5,7),16);
+  return `rgba(${r},${g},${b},${alpha})`;
+}
+function wordChipHtml(w){
+  const hex = wordColorHex(w.color);
+  if(!hex) return '';
+  const name = (WORD_COLORS.find(c=>c.key===w.color)||{}).name || '';
+  return `<span class="color-chip" style="background:${hex};">${esc(name)}</span>`;
+}
+function colorFilterLabel(cf){
+  if(!cf) return '';
+  return cf==='none' ? 'Renksiz' : ((WORD_COLORS.find(c=>c.key===cf)||{}).name || '');
+}
+function sentList(w){ return (w && Array.isArray(w.sentences)) ? w.sentences.filter(sc=>sc && (sc.de||sc.tr)) : []; }
+function hasExample(w){ return sentList(w).length>0; }
+function exampleOf(w, rep){ const l = sentList(w); return l.length ? l[(rep||0) % l.length] : null; }
+function exampleSelButtonHtml(w){
+  if(!hasExample(w)) return '';
+  return EXAMPLE_SELECTED.has(w.id)
+    ? `<button class="reset-btn" data-unselexample="${w.id}" style="border-color:var(--green);color:var(--green);font-weight:700;" title="Cümleli çalışmadan çıkar">✓ seçili</button>`
+    : `<button class="reset-btn" data-selexample="${w.id}" title="Cümleli çalışmaya ekle">📝 çalış</button>`;
+}
+function exampleDisplayHtml(w, size, rep){
+  const ex = exampleOf(w, rep);
+  if(!ex) return '';
+  const cls = 'word-example' + (size ? ' '+size : '');
+  const wHex = wordColorHex(w.color);
+  const borderColor = wHex || 'var(--amber)';
+  const deStyle = wHex ? `color:${wHex};font-weight:600;` : '';
+  return `<div class="${cls}" style="border-left-color:${borderColor};">
+    ${ex.de ? `<div class="we-de" style="${deStyle}">${esc(ex.de)}</div>` : ''}
+    ${ex.tr ? `<div class="we-tr">${esc(ex.tr)}</div>` : ''}
+  </div>`;
+}
+
+function newModuleId(){ return 'm'+Date.now()+Math.floor(Math.random()*10000); }
+function newSubModuleId(){ return 'sm'+Date.now()+Math.floor(Math.random()*10000); }
+let WORD_ID_COUNTER = 0;
+function newWordId(){ WORD_ID_COUNTER++; return 'w'+Date.now()+'_'+WORD_ID_COUNTER+'_'+Math.floor(Math.random()*10000); }
+let SENTENCE_ID_COUNTER = 0;
+function newSentenceId(){ SENTENCE_ID_COUNTER++; return 'sc'+Date.now()+'_'+SENTENCE_ID_COUNTER+'_'+Math.floor(Math.random()*10000); }
+
+const STAGE_TYPES = ['HÖM','TAHMİN','TERS','EŞLEŞTİRME','TAHMİN','TERS','EŞLEŞTİRME','TAHMİN','TERS','MİNİ TEST'];
+const EXAMPLE_STAGE_TYPES = ['TAHMİN','CÜMLE','EŞLEŞTİRME'];
+const SENTENCE_STAGE_TYPES = ['HÖM','TAHMİN','TERS','MİNİ TEST'];
+const REPS = 14;
+const STEPS_PER_MODULE = STAGE_TYPES.length * REPS;
+const EXAMPLE_STEPS_PER_MODULE = EXAMPLE_STAGE_TYPES.length * REPS;
+const SENTENCE_STEPS_PER_MODULE = SENTENCE_STAGE_TYPES.length * REPS;
+
+function repsDone(prog){ return Math.floor(prog.step / STAGE_TYPES.length); }
+function progLabel(prog){ return repsDone(prog)+'/'+REPS; }
+function progPct(prog){ return Math.round((repsDone(prog)/REPS)*100); }
+function exampleProgLabel(step){ return Math.floor(step / EXAMPLE_STAGE_TYPES.length)+'/'+REPS; }
+function exampleProgPct(step){ return Math.round((Math.floor(step / EXAMPLE_STAGE_TYPES.length)/REPS)*100); }
+function sentenceProgLabel(step){ return Math.floor(step / SENTENCE_STAGE_TYPES.length)+'/'+REPS; }
+function sentenceProgPct(step){ return Math.round((Math.floor(step / SENTENCE_STAGE_TYPES.length)/REPS)*100); }
+
+function seededRandom(seed){
+  let a = (seed>>>0) || 1;
+  return function(){
+    a |= 0; a = (a + 0x6D2B79F5) | 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+function seededShuffle(arr, seed){
+  const rnd = seededRandom(seed+1);
+  const a = arr.slice();
+  for(let i=a.length-1;i>0;i--){
+    const j = Math.floor(rnd()*(i+1));
+    [a[i],a[j]]=[a[j],a[i]];
+  }
+  return a;
+}
+function normalizeTr(str){
+  return (str||'').toLocaleLowerCase('tr').replace(/-/g,' ').replace(/[().,;:!?'"]/g,'').replace(/\s+/g,' ').trim();
+}
+function normalizeDe(str){
+  return (str||'').toLocaleLowerCase('de').trim();
+}
+function isCorrectTr(input, acceptedList){
+  const n = normalizeTr(input);
+  if(!n) return false;
+  return acceptedList.some(a => normalizeTr(a)===n);
+}
+function looseTrMatch(a, b){
+  const na = normalizeTr(a); const nb = normalizeTr(b);
+  if(!na || !nb) return false;
+  if(na === nb) return true;
+  if(na.length >= 4 && nb.length >= 4){
+    if(na.includes(nb) || nb.includes(na)) return true;
+  }
+  return false;
+}
+function looseDeMatch(a, b){
+  const na = normalizeDe(a); const nb = normalizeDe(b);
+  if(!na || !nb) return false;
+  if(na === nb) return true;
+  if(na.length >= 4 && nb.length >= 4){
+    if(na.includes(nb) || nb.includes(na)) return true;
+  }
+  return false;
+}
+
+/* =========================================================
+   VERİ DEPOLAMA
+   ========================================================= */
+const memFallback = {};
+let _hasLS = null;
+function hasClaudeStorage(){ return typeof window!=='undefined' && !!window.storage; }
+function hasLocalStorage(){
+  if(_hasLS!==null) return _hasLS;
+  try{
+    if(typeof window==='undefined' || !window.localStorage) return _hasLS=false;
+    const t='__osd_test__'; window.localStorage.setItem(t,'1'); window.localStorage.removeItem(t);
+    return _hasLS = true;
+  }catch(e){ return _hasLS = false; }
+}
+async function storeGet(key){
+  try{
+    if(hasClaudeStorage()){
+      const r = await window.storage.get(key, false);
+      return r ? JSON.parse(r.value) : null;
+    }
+  }catch(e){}
+  try{
+    if(hasLocalStorage()){
+      const v = window.localStorage.getItem('osd:'+key);
+      return v ? JSON.parse(v) : null;
+    }
+  }catch(e){}
+  return memFallback[key] !== undefined ? memFallback[key] : null;
+}
+async function storeSet(key, value){
+  memFallback[key] = value;
+  try{
+    if(hasClaudeStorage()){ await window.storage.set(key, JSON.stringify(value), false); return; }
+  }catch(e){}
+  try{
+    if(hasLocalStorage()){ window.localStorage.setItem('osd:'+key, JSON.stringify(value)); return; }
+  }catch(e){}
+}
+async function storeDelete(key){
+  delete memFallback[key];
+  try{ if(hasClaudeStorage()) await window.storage.delete(key, false); }catch(e){}
+  try{ if(hasLocalStorage()) window.localStorage.removeItem('osd:'+key); }catch(e){}
+}
+
+/* =========================================================
+   UYGULAMA DURUMU
+   ========================================================= */
+let MODULES = [];
+let PROGRESS = {};
+let SCREEN = 'loading';
+let CUR_MODULE = 0;
+let EDIT_MODULE = 0;
+let RENAME_IDX = null;
+let RENAME_SUB_ID = null;
+let EDIT_WORD_ID = null;
+let EDIT_WORD_COLOR = null;
+let EDIT_EXAMPLE_WORD_ID = null;
+let BULK_ADD_OPEN = false;
+let BULK_SENTENCE_ADD_OPEN = false;
+let CUR_SUBMODULE = null;
+let session = null;
+let activeTimer = null;
+let LAST_REP = 0;
+
+let NEW_WORD_COLOR = null;
+let QUICK_COLOR_ID = null;
+let SUB_OPEN_IDS = new Set();
+let NEW_WORD_OPEN = false;
+let SUB_ADD_OPEN = null;
+let COLOR_FILTER = null;
+
+const COLOR_FILTER_BULK = {};
+let SELECTED_BULK_WORDS = new Set();
+let SEL_BULK_SUBID = null;
+let BULK_PENDING_COLOR = {};
+let MAIN_PENDING_COLOR = undefined;
+let SELECTED_WORDS = new Set();
+let EXAMPLE_SELECTED = new Set();
+
+let SENTENCE_PENDING_COLOR = null;
+let QUICK_SENT_COLOR_ID = null;
+let EDIT_SENTENCE_ID = null;
+let EDIT_SENTENCE_GROUP_ID = null;
+let SELECTED_SENTENCES = new Set();
+let SEL_SENT_SUBID = null;
+let SENT_PENDING_COLOR_PER_GROUP = {};
+let SENTENCE_COLOR_FILTER = {};
+
+let KEY_HANDLER = null;
+
+function clearActiveTimer(){ if(activeTimer){ clearInterval(activeTimer); activeTimer=null; } }
+function clearKeyHandler(){ if(KEY_HANDLER){ document.removeEventListener('keydown', KEY_HANDLER); KEY_HANDLER=null; } }
+
+function defaultProgress(){
+  const p = {};
+  MODULES.forEach(m=> p[m.id] = {step:0, done:false});
+  return p;
+}
+
+const WORD_COLORS = [
+  {key:'green',  name:'Yeşil',   hex:'#3F9142'},
+  {key:'blue',   name:'Mavi',    hex:'#3B6FB6'},
+  {key:'red',    name:'Kırmızı', hex:'#C2403F'},
+  {key:'purple', name:'Mor',     hex:'#8A5BB5'},
+  {key:'orange', name:'Turuncu', hex:'#E4772A'},
+  {key:'pink',   name:'Pembe',   hex:'#D6679A'}
+];
+function wordColorHex(key){ const c = WORD_COLORS.find(x=>x.key===key); return c ? c.hex : null; }
+
+function colorPickerHtml(scope, current){
+  const none = `<button type="button" class="color-dot none ${!current?'active':''}" data-colorpick="${scope}" data-color="" title="Renksiz"></button>`;
+  return `<div class="color-picker">${none}${WORD_COLORS.map(c=>`<button type="button" class="color-dot ${current===c.key?'active':''}" style="--cdot:${c.hex};" data-colorpick="${scope}" data-color="${c.key}" title="${c.name}"></button>`).join('')}</div>`;
+}
+
+function subIsBulk(sub){ return !!(sub && sub.kind==='bulk'); }
+function subIsSentence(sub){ return !!(sub && sub.kind==='sentence'); }
+
+function mainWords(m){
+  return m.words.filter(w=> w.origin !== 'bulk');
+}
+
+function selectedExampleIdsInSub(m, sub){
+  if(!sub) return [];
+  return (sub.wordIds||[]).filter(id=>{
+    if(!EXAMPLE_SELECTED.has(id)) return false;
+    const w = m.words.find(x=>x.id===id);
+    return !!(w && hasExample(w));
+  });
+}
+
+function normalizeLoadedData(){
+  MODULES.forEach(m=>{
+    if(!PROGRESS[m.id]) PROGRESS[m.id] = {step:0, done:false};
+    if(typeof m.name !== 'string') m.name = '';
+    if(!Array.isArray(m.subModules)) m.subModules = [];
+    if(!Array.isArray(m.words)) m.words = [];
+    m.words.forEach(w=>{
+      if(typeof w.errors !== 'number') w.errors = 0;
+      if(!WORD_COLORS.some(c=>c.key===w.color)) w.color = null;
+      if(!w.id) w.id = newWordId();
+      if(!Array.isArray(w.tr)) w.tr = w.tr ? [String(w.tr)] : [];
+      if(!Array.isArray(w.sentences)) w.sentences = [];
+      if(w.example && typeof w.example === 'object' && (w.example.de || w.example.tr)){
+        // eski tek örnek cümle -> cümle listesinin ilk elemanı
+        w.sentences.unshift({ id:newSentenceId(), de: String(w.example.de||''), tr: String(w.example.tr||''), color:null });
+      }
+      delete w.example;
+      w.sentences = w.sentences.filter(sc => sc && typeof sc === 'object').map(sc=>({
+        id: sc.id || newSentenceId(),
+        de: typeof sc.de === 'string' ? sc.de : '',
+        tr: typeof sc.tr === 'string' ? sc.tr : '',
+        color: WORD_COLORS.some(c=>c.key===sc.color) ? sc.color : null
+      }));
+      if(!w.sentProgress || typeof w.sentProgress !== 'object') w.sentProgress = { step: 0 };
+      if(typeof w.sentProgress.step !== 'number') w.sentProgress.step = 0;
+    });
+    m.words.forEach(w=>{
+      if(typeof w.origin !== 'string'){
+        const inBulk = (m.subModules||[]).some(s=>subIsBulk(s)&&(s.wordIds||[]).includes(w.id));
+        w.origin = inBulk ? 'bulk' : 'manual';
+      }
+    });
+    m.subModules.forEach(sub=>{
+      if(sub.kind === 'sentence'){
+        if(!Array.isArray(sub.sentences)) sub.sentences = [];
+        if(!sub.progress || typeof sub.progress !== 'object') sub.progress = { step: 0 };
+        if(typeof sub.progress.step !== 'number') sub.progress.step = 0;
+        sub.sentences.forEach(sc=>{
+          if(!sc.id) sc.id = newSentenceId();
+          if(typeof sc.de !== 'string') sc.de = '';
+          if(typeof sc.tr !== 'string') sc.tr = '';
+          if(!WORD_COLORS.some(c=>c.key===sc.color)) sc.color = null;
+        });
+        delete sub.wordIds;
+        return;
+      }
+      if(!Array.isArray(sub.wordIds)){
+        const oldDeList = Array.isArray(sub.wordDe) ? sub.wordDe : [];
+        sub.wordIds = m.words.filter(w=>oldDeList.includes(w.de)).map(w=>w.id);
+      }
+      delete sub.wordDe;
+      sub.wordIds = (sub.wordIds||[]).filter(id => m.words.some(w=>w.id===id));
+    });
+  });
+}
+
+async function loadProgress(){
+  const saved = await storeGet('osd_data_v2');
+  if(saved && Array.isArray(saved.modules)){
+    MODULES = saved.modules;
+    PROGRESS = saved.progress || {};
+  } else {
+    MODULES = [];
+    PROGRESS = {};
+  }
+  normalizeLoadedData();
+}
+
+let LINKED_WRITE_CHAIN = Promise.resolve();
+async function saveProgress(){
+  await storeSet('osd_data_v2', {modules:MODULES, progress:PROGRESS});
+  LINKED_WRITE_CHAIN = LINKED_WRITE_CHAIN.then(()=>writeToLinkedFile()).catch(()=>{});
+}
+
+/* =========================================================
+   DOSYAYA BAĞLANMA
+   ========================================================= */
+function fsApiSupported(){ return typeof window!=='undefined' && !!window.showSaveFilePicker; }
+let LINKED_HANDLE = null;
+let RECONNECT_HANDLE_PENDING = null;
+
+function idbOpen(){
+  return new Promise((resolve,reject)=>{
+    if(!('indexedDB' in window)){ reject(new Error('no idb')); return; }
+    const req = indexedDB.open('osd_fs_link', 1);
+    req.onupgradeneeded = ()=>{ req.result.createObjectStore('kv'); };
+    req.onsuccess = ()=> resolve(req.result);
+    req.onerror = ()=> reject(req.error);
+  });
+}
+async function idbGet(key){
+  try{
+    const db = await idbOpen();
+    return await new Promise((resolve,reject)=>{
+      const tx = db.transaction('kv','readonly');
+      const r = tx.objectStore('kv').get(key);
+      r.onsuccess = ()=> resolve(r.result || null);
+      r.onerror = ()=> reject(r.error);
+    });
+  }catch(e){ return null; }
+}
+async function idbSet(key, value){
+  try{
+    const db = await idbOpen();
+    await new Promise((resolve,reject)=>{
+      const tx = db.transaction('kv','readwrite');
+      tx.objectStore('kv').put(value, key);
+      tx.oncomplete = ()=> resolve();
+      tx.onerror = ()=> reject(tx.error);
+    });
+  }catch(e){}
+}
+
+async function connectLocalFile(){
+  if(!fsApiSupported()){
+    alert('Bu özellik yalnızca Chrome, Edge veya Opera tarayıcısında çalışır.');
+    return;
+  }
+  try{
+    const handle = await window.showSaveFilePicker({
+      suggestedName: 'osd_veritabani.json',
+      types: [{ description:'JSON veritabanı', accept:{'application/json':['.json']} }]
+    });
+    LINKED_HANDLE = handle;
+    await idbSet('fileHandle', handle);
+    let fileHadData = false;
+    try{
+      const f = await handle.getFile();
+      const t = await f.text();
+      if(t && t.trim()){
+        const d = JSON.parse(t);
+        if(d && Array.isArray(d.modules) && d.modules.length>0) fileHadData = true;
+      }
+    }catch(e){}
+    if(fileHadData){
+      if(MODULES.length===0){
+        await maybeRestoreFromLinkedFile();
+        alert('Bağlandı ve dosyadaki veriler geri yüklendi.');
+      } else {
+        const useFile = confirm('Seçilen dosyada kayıtlı veri var. "Tamam" = dosyadaki veriyi kullan, "İptal" = tarayıcıdaki veriyi dosyaya yaz.');
+        if(useFile){
+          await maybeRestoreFromLinkedFile(true);
+          alert('Dosyadaki veri yüklendi.');
+        } else {
+          await writeToLinkedFile();
+          alert('Tarayıcıdaki veri dosyaya yazıldı.');
+        }
+      }
+    } else {
+      await writeToLinkedFile();
+      alert('Bağlandı! Bundan sonra her değişiklik otomatik olarak bu dosyaya da yazılacak.');
+    }
+    render();
+  }catch(e){}
+}
+
+async function writeToLinkedFile(){
+  if(!LINKED_HANDLE) return;
+  try{
+    const perm = await LINKED_HANDLE.queryPermission({mode:'readwrite'});
+    if(perm !== 'granted') return;
+    const payload = { app:'osd-almanca-kelime', version:3, savedAt:new Date().toISOString(), modules:MODULES, progress:PROGRESS };
+    const writable = await LINKED_HANDLE.createWritable();
+    await writable.write(JSON.stringify(payload, null, 2));
+    await writable.close();
+  }catch(e){}
+}
+
+async function tryReconnectLinkedFile(){
+  if(!fsApiSupported()) return;
+  const handle = await idbGet('fileHandle');
+  if(!handle) return;
+  try{
+    let perm = await handle.queryPermission({mode:'readwrite'});
+    if(perm === 'prompt'){ RECONNECT_HANDLE_PENDING = handle; return; }
+    if(perm !== 'granted') return;
+    LINKED_HANDLE = handle;
+    await maybeRestoreFromLinkedFile();
+  }catch(e){}
+}
+
+async function maybeRestoreFromLinkedFile(force){
+  if(!LINKED_HANDLE) return;
+  try{
+    const file = await LINKED_HANDLE.getFile();
+    const text = await file.text();
+    if(!text || !text.trim()) return;
+    const data = JSON.parse(text);
+    if(!data || !Array.isArray(data.modules)) return;
+    if(force || (MODULES.length===0 && data.modules.length>0)){
+      MODULES = data.modules;
+      PROGRESS = data.progress || {};
+      normalizeLoadedData();
+      await storeSet('osd_data_v2', {modules:MODULES, progress:PROGRESS});
+    }
+  }catch(e){}
+}
+
+async function confirmReconnect(){
+  const handle = RECONNECT_HANDLE_PENDING;
+  if(!handle) return;
+  try{
+    const perm = await handle.requestPermission({mode:'readwrite'});
+    if(perm==='granted'){
+      LINKED_HANDLE = handle;
+      RECONNECT_HANDLE_PENDING = null;
+      await maybeRestoreFromLinkedFile();
+      render();
+    } else {
+      alert('İzin verilmedi.');
+    }
+  }catch(e){ alert('Dosya bağlantısı kurulamadı.'); }
+}
+
+function exportAllDataAsJson(){
+  if(MODULES.length===0){ alert('Yedeklenecek herhangi bir modül yok.'); return; }
+  const payload = { app:'osd-almanca-kelime', version:3, exportedAt:new Date().toISOString(), modules:MODULES, progress:PROGRESS };
+  const blob = new Blob([JSON.stringify(payload, null, 2)], {type:'application/json;charset=utf-8'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  const dateStr = new Date().toISOString().slice(0,10);
+  a.download = 'osd_yedek_'+dateStr+'.json';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  setTimeout(()=>URL.revokeObjectURL(url), 1000);
+}
+
+async function importAllDataFromFile(file){
+  if(!file) return;
+  let data;
+  try{ data = JSON.parse(await file.text()); }
+  catch(e){ alert('Geçerli bir yedek dosyası değil.'); return; }
+  if(!data || !Array.isArray(data.modules)){ alert('Geçerli bir yedek dosyası değil.'); return; }
+  if(!confirm('Bu yedek, cihazdaki MEVCUT tüm modülleri DEĞİŞTİRECEK. Devam edilsin mi?')) return;
+  MODULES = data.modules;
+  PROGRESS = data.progress || {};
+  normalizeLoadedData();
+  await saveProgress();
+  SCREEN = 'list';
+  render();
+  alert('Yedek yüklendi: '+MODULES.length+' modül.');
+}
+
+function moduleLabel(m, idx){
+  return (m && m.name && m.name.trim()) ? m.name.trim() : ('Modül '+(idx+1));
+}
+
+function subModuleLabel(sub, i, mod){
+  if(sub && sub.name && sub.name.trim()) return sub.name.trim();
+  if(sub && sub.kind === 'sentence'){
+    let n = i;
+    if(mod && Array.isArray(mod.subModules)) n = mod.subModules.filter(x => x.kind === 'sentence').indexOf(sub);
+    return 'Cümle Grubu ' + (n+1);
+  }
+  let n = i;
+  if(mod && Array.isArray(mod.subModules)) n = mod.subModules.filter(x => subIsBulk(x) === subIsBulk(sub) && x.kind !== 'sentence').indexOf(sub);
+  return (subIsBulk(sub) ? 'Toplu Grup ' : 'Tekrar Modülü ') + (n+1);
+}
+
+/* =========================================================
+   MODÜL VE KELİME YÖNETİMİ
+   ========================================================= */
+async function addModule(){
+  const id = newModuleId();
+  MODULES.push({id, name:'', words:[], subModules:[]});
+  PROGRESS[id] = {step:0, done:false};
+  await saveProgress();
+  EDIT_MODULE = MODULES.length-1;
+  COLOR_FILTER = null;
+  NEW_WORD_COLOR = null;
+  SCREEN = 'edit';
+  render();
+}
+async function deleteModule(idx){
+  const m = MODULES[idx];
+  if(!confirm('"'+moduleLabel(m,idx)+'" ve tüm kelimeler silinsin mi?')) return;
+  delete PROGRESS[m.id];
+  MODULES.splice(idx,1);
+  await saveProgress();
+  SCREEN='list';
+  render();
+}
+async function renameModule(idx, newName){
+  const m = MODULES[idx];
+  if(!m) return;
+  m.name = (newName||'').trim().slice(0,40);
+  await saveProgress();
+  RENAME_IDX = null;
+  render();
+}
+
+async function addWordToModule(idx, de, trRaw){
+  const m = MODULES[idx];
+  if(!m) return;
+  de = (de||'').trim();
+  const tr = (trRaw||'').split(',').map(s=>s.trim()).filter(Boolean);
+  if(!de || tr.length===0){ alert('Lütfen hem Almanca hem Türkçe alanını doldur.'); return; }
+  m.words.push({id:newWordId(), de, tr, errors:0, color:NEW_WORD_COLOR, origin:'manual', sentences:[], sentProgress:{step:0}});
+  await saveProgress();
+  render();
+}
+
+function parseBulkLine(line, origin){
+  line = line.trim();
+  if(!line) return null;
+  let sepIdx = -1;
+  const tabIdx = line.indexOf('\t');
+  if(tabIdx !== -1){ sepIdx = tabIdx; }
+  else {
+    const colonIdx = line.indexOf(':');
+    if(colonIdx !== -1){ sepIdx = colonIdx; }
+  }
+  if(sepIdx === -1) return null;
+  const de = line.slice(0, sepIdx).trim();
+  const trRaw = line.slice(sepIdx+1).trim();
+  const tr = trRaw.split(',').map(s=>s.trim()).filter(Boolean);
+  if(!de || tr.length===0) return null;
+  return {id:newWordId(), de, tr, errors:0, color:NEW_WORD_COLOR, origin: origin || 'bulk', sentences:[], sentProgress:{step:0}};
+}
+
+async function bulkAddWordsToModule(idx, text, asMain){
+  const m = MODULES[idx];
+  if(!m) return;
+  const origin = asMain ? 'manual' : 'bulk';
+  const lines = (text||'').split('\n');
+  let added = 0, skipped = 0;
+  const addedWords = [];
+  lines.forEach(line=>{
+    if(!line.trim()) return;
+    const w = parseBulkLine(line, origin);
+    if(w){ m.words.push(w); addedWords.push(w); added++; } else { skipped++; }
+  });
+  if(!asMain && added>0){
+    if(!Array.isArray(m.subModules)) m.subModules = [];
+    const grp = { id:newSubModuleId(), name:'', kind:'bulk', wordIds: addedWords.map(w=>w.id) };
+    m.subModules.push(grp);
+    SUB_OPEN_IDS.add(grp.id);
+  }
+  if(added===0){ alert('Geçerli satır bulunamadı.'); return; }
+  await saveProgress();
+  render();
+  const target = asMain ? 'ana modüle' : 'toplu gruba';
+  alert(added+' kelime '+target+' eklendi.'+(skipped>0 ? ' ('+skipped+' satır atlandı.)' : ''));
+}
+
+function parseSentenceLine(line){
+  line = line.trim();
+  if(!line) return null;
+  const sepIdx = line.indexOf(':');
+  if(sepIdx === -1) return null;
+  const de = line.slice(0, sepIdx).trim();
+  const tr = line.slice(sepIdx+1).trim();
+  if(!de || !tr) return null;
+  return { id: newSentenceId(), de, tr, color: SENTENCE_PENDING_COLOR };
+}
+async function bulkAddSentencesToModule(idx, text){
+  const m = MODULES[idx];
+  if(!m) return;
+  const lines = (text||'').split('\n');
+  const added = [];
+  lines.forEach(line=>{
+    const sc = parseSentenceLine(line);
+    if(sc) added.push(sc);
+  });
+  if(added.length === 0){
+    alert('Geçerli satır bulunamadı. Her satıra "almanca cümle : türkçe çeviri" biçiminde yaz.');
+    return;
+  }
+  if(!Array.isArray(m.subModules)) m.subModules = [];
+  const grp = {
+    id: newSubModuleId(),
+    name: '',
+    kind: 'sentence',
+    progress: { step: 0 },
+    sentences: added
+  };
+  m.subModules.push(grp);
+  SUB_OPEN_IDS.add(grp.id);
+  await saveProgress();
+  render();
+  alert(added.length + ' cümle yeni cümle grubuna eklendi.');
+}
+// Cümle sahibi: ya bir cümle grubu (subModules) ya da bir kelime ('w:<kelimeId>')
+function sentOwner(m, id){
+  if(typeof id === 'string' && id.indexOf('w:') === 0){
+    const w = m.words.find(x=>'w:'+x.id === id);
+    if(!w) return null;
+    if(!Array.isArray(w.sentences)) w.sentences = [];
+    if(!w.sentProgress || typeof w.sentProgress !== 'object') w.sentProgress = { step: 0 };
+    return { id, kind:'sentence', _word:w, name:w.de, sentences:w.sentences, progress:w.sentProgress };
+  }
+  return (m.subModules||[]).find(s=>s.id===id) || null;
+}
+function sentCommit(o){ if(o && o._word){ o._word.sentences = o.sentences; o._word.sentProgress = o.progress; } }
+let WORD_SENT_OPEN = new Set();   // cümle paneli açık kelimeler
+let SENT_ADD_OPEN = new Set();    // 'cümle ekle' formu açık sahipler
+async function addSentenceToOwner(idx, ownerId, de, tr){
+  const m = MODULES[idx];
+  const o = m && sentOwner(m, ownerId);
+  if(!o) return false;
+  de = (de||'').trim(); tr = (tr||'').trim();
+  if(!de || !tr){ alert('Lütfen hem Almanca cümleyi hem Türkçe çevirisini yaz.'); return false; }
+  o.sentences.push({ id:newSentenceId(), de, tr, color:null });
+  sentCommit(o);
+  await saveProgress();
+  render();
+  return true;
+}
+async function updateSentenceInGroup(idx, subId, sentId, de, tr, color){
+  const m = MODULES[idx];
+  const sub = sentOwner(m, subId);
+  if(!sub) return;
+  const sc = (sub.sentences||[]).find(x=>x.id===sentId);
+  if(!sc) return;
+  if(de !== undefined && de !== null) sc.de = String(de).trim();
+  if(tr !== undefined && tr !== null) sc.tr = String(tr).trim();
+  if(color !== undefined) sc.color = color;
+  sentCommit(sub);
+  await saveProgress();
+  render();
+}
+async function removeSentenceFromGroup(idx, subId, sentId){
+  const m = MODULES[idx];
+  const sub = sentOwner(m, subId);
+  if(!sub) return;
+  sub.sentences = (sub.sentences||[]).filter(x=>x.id!==sentId);
+  sentCommit(sub);
+  SELECTED_SENTENCES.delete(sentId);
+  if((sub.sentences||[]).length === 0 && !sub._word){ await deleteSubModule(idx, subId, true); return; }
+  await saveProgress();
+  render();
+}
+function toggleSentenceSelection(subId, sentId){
+  if(EDIT_SENTENCE_ID !== null){ EDIT_SENTENCE_ID = null; EDIT_SENTENCE_GROUP_ID = null; }
+  if(SEL_SENT_SUBID !== subId){
+    SELECTED_SENTENCES.clear();
+    SEL_SENT_SUBID = subId;
+    delete SENT_PENDING_COLOR_PER_GROUP[subId];
+  }
+  if(SELECTED_SENTENCES.has(sentId)) SELECTED_SENTENCES.delete(sentId);
+  else SELECTED_SENTENCES.add(sentId);
+  render();
+}
+async function assignColorToSentenceSelection(idx, subId, color){
+  const m = MODULES[idx];
+  const sub = sentOwner(m, subId);
+  if(!sub) return;
+  (sub.sentences||[]).forEach(sc=>{
+    if(SELECTED_SENTENCES.has(sc.id)) sc.color = color;
+  });
+  sentCommit(sub);
+  await saveProgress();
+  render();
+}
+
+function wordsToBulkText(words){
+  return words.map(w => w.de + '\t' + w.tr.join(', ')).join('\n');
+}
+function fileNameForModule(m, idx){
+  const label = moduleLabel(m, idx) || ('Modul_'+(idx+1));
+  const safe = label.replace(/[^\p{L}\p{N}_\- ]+/gu,'').trim().replace(/\s+/g,'_');
+  return (safe || 'modul') + '_kelimeler.txt';
+}
+function downloadModuleWordsAsTxt(idx){
+  const m = MODULES[idx];
+  const words = mainWords(m);
+  if(!m || words.length===0){ alert('İndirilecek kelime yok.'); return; }
+  const text = wordsToBulkText(words);
+  const blob = new Blob([text], {type:'text/plain;charset=utf-8'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = fileNameForModule(m, idx);
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  setTimeout(()=>URL.revokeObjectURL(url), 1000);
+}
+
+function downloadBulkGroupAsTxt(idx, subId){
+  const m = MODULES[idx];
+  const sub = m && (m.subModules||[]).find(s=>s.id===subId);
+  if(!sub){ return; }
+  const words = (sub.wordIds||[]).map(id=>m.words.find(w=>w.id===id)).filter(Boolean);
+  if(words.length===0){ alert('İndirilecek kelime yok.'); return; }
+  const blob = new Blob([wordsToBulkText(words)], {type:'text/plain;charset=utf-8'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  const label = subModuleLabel(sub, (m.subModules||[]).indexOf(sub), m);
+  const safe = label.replace(/[^\p{L}\p{N}_\- ]+/gu,'').trim().replace(/\s+/g,'_');
+  a.href = url;
+  a.download = (safe || 'toplu_grup') + '_kelimeler.txt';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  setTimeout(()=>URL.revokeObjectURL(url), 1000);
+}
+
+async function removeWordFromModule(idx, wordId){
+  const m = MODULES[idx];
+  if(!m) return;
+  m.words = m.words.filter(w=>w.id!==wordId);
+  (m.subModules||[]).forEach(sub=>{
+    if(sub.kind === 'sentence') return;
+    sub.wordIds = (sub.wordIds||[]).filter(id=>id!==wordId);
+  });
+  m.subModules = (m.subModules||[]).filter(sub => subIsSentence(sub) ? ((sub.sentences||[]).length>0) : ((sub.wordIds||[]).length > 0));
+  SELECTED_WORDS.delete(wordId);
+  SELECTED_BULK_WORDS.delete(wordId);
+  EXAMPLE_SELECTED.delete(wordId);
+  if(EDIT_EXAMPLE_WORD_ID === wordId) EDIT_EXAMPLE_WORD_ID = null;
+  await saveProgress();
+  render();
+}
+
+async function updateWordInModule(idx, wordId, de, trRaw){
+  const m = MODULES[idx];
+  const w = m && m.words.find(x=>x.id===wordId);
+  if(!w) return;
+  de = (de||'').trim();
+  const tr = (trRaw||'').split(',').map(s=>s.trim()).filter(Boolean);
+  if(!de || tr.length===0){ alert('Lütfen hem Almanca hem Türkçe alanını doldur.'); return; }
+  w.de = de;
+  w.tr = tr;
+  w.color = EDIT_WORD_COLOR;
+  await saveProgress();
+  EDIT_WORD_ID = null;
+  render();
+}
+
+function toggleWordSelection(id){
+  if(EDIT_EXAMPLE_WORD_ID !== null) EDIT_EXAMPLE_WORD_ID = null;
+  if(SELECTED_WORDS.has(id)) SELECTED_WORDS.delete(id); else SELECTED_WORDS.add(id);
+  render();
+}
+function selectAllWords(mod){
+  mainWords(mod).forEach(w=> SELECTED_WORDS.add(w.id));
+  render();
+}
+function clearSelection(){
+  SELECTED_WORDS.clear();
+  MAIN_PENDING_COLOR = undefined;
+  render();
+}
+
+function toggleBulkSelection(subId, wordId){
+  if(EDIT_EXAMPLE_WORD_ID !== null) EDIT_EXAMPLE_WORD_ID = null;
+  if(SEL_BULK_SUBID !== subId){
+    SELECTED_BULK_WORDS.clear();
+    SEL_BULK_SUBID = subId;
+    delete BULK_PENDING_COLOR[subId];
+  }
+  if(SELECTED_BULK_WORDS.has(wordId)) SELECTED_BULK_WORDS.delete(wordId);
+  else SELECTED_BULK_WORDS.add(wordId);
+  render();
+}
+function clearBulkSelection(subId){
+  if(SEL_BULK_SUBID === subId){
+    SELECTED_BULK_WORDS.clear();
+    SEL_BULK_SUBID = null;
+    delete BULK_PENDING_COLOR[subId];
+  }
+  render();
+}
+function selectAllBulkWords(subId){
+  const m = MODULES[EDIT_MODULE];
+  const sub = (m.subModules||[]).find(s=>s.id===subId);
+  if(!sub) return;
+  if(SEL_BULK_SUBID !== subId){ SELECTED_BULK_WORDS.clear(); SEL_BULK_SUBID = subId; }
+  const filter = COLOR_FILTER_BULK[subId] || null;
+  (sub.wordIds||[]).forEach(id=>{
+    const w = m.words.find(x=>x.id===id);
+    if(!w) return;
+    if(filter){
+      if(filter==='none' && w.color) return;
+      if(filter!=='none' && w.color!==filter) return;
+    }
+    SELECTED_BULK_WORDS.add(id);
+  });
+  render();
+}
+async function assignColorToBulkSelection(subId, color){
+  const m = MODULES[EDIT_MODULE];
+  const sub = (m.subModules||[]).find(s=>s.id===subId);
+  if(!sub) return;
+  (sub.wordIds||[]).forEach(id=>{
+    if(SELECTED_BULK_WORDS.has(id)){
+      const w = m.words.find(x=>x.id===id);
+      if(w) w.color = color;
+    }
+  });
+  await saveProgress();
+  render();
+}
+async function assignColorToMainSelection(color){
+  const m = MODULES[EDIT_MODULE];
+  if(!m) return;
+  m.words.forEach(w=>{
+    if(SELECTED_WORDS.has(w.id)) w.color = color;
+  });
+  await saveProgress();
+  render();
+}
+
+async function createSubModuleFromSelection(idx){
+  const m = MODULES[idx];
+  if(!m || SELECTED_WORDS.size===0) return;
+  if(!Array.isArray(m.subModules)) m.subModules = [];
+  const sub = { id:newSubModuleId(), name:'', wordIds: Array.from(SELECTED_WORDS) };
+  m.subModules.push(sub);
+  SELECTED_WORDS.clear();
+  MAIN_PENDING_COLOR = undefined;
+  SUB_OPEN_IDS.add(sub.id);
+  await saveProgress();
+  render();
+}
+async function createRepeatFromBulkSelection(idx, subId){
+  const m = MODULES[idx];
+  if(!m || SEL_BULK_SUBID !== subId || SELECTED_BULK_WORDS.size===0) return;
+  if(!Array.isArray(m.subModules)) m.subModules = [];
+  const sub = { id:newSubModuleId(), name:'', wordIds: Array.from(SELECTED_BULK_WORDS) };
+  m.subModules.push(sub);
+  SELECTED_BULK_WORDS.clear();
+  SEL_BULK_SUBID = null;
+  delete BULK_PENDING_COLOR[subId];
+  SUB_OPEN_IDS.add(sub.id);
+  await saveProgress();
+  render();
+}
+async function removeWordFromSubModule(idx, subId, wordId){
+  const m = MODULES[idx];
+  if(!m) return;
+  const sub = (m.subModules||[]).find(s=>s.id===subId);
+  if(!sub) return;
+  sub.wordIds = (sub.wordIds||[]).filter(id=>id!==wordId);
+  const w = m.words.find(x=>x.id===wordId);
+  if(w && w.origin === 'bulk'){
+    const stillInAnySub = (m.subModules||[]).some(s => s.id !== subId && (s.wordIds||[]).includes(wordId));
+    if(!stillInAnySub){
+      m.words = m.words.filter(x=>x.id!==wordId);
+    } else {
+      const stillInBulkGroup = (m.subModules||[]).some(s => s.id !== subId && subIsBulk(s) && (s.wordIds||[]).includes(wordId));
+      if(!stillInBulkGroup){
+        w.origin = 'manual';
+      }
+    }
+  }
+  if((sub.wordIds||[]).length === 0){ await deleteSubModule(idx, subId, true); return; }
+  await saveProgress();
+  render();
+}
+async function addExistingWordToSubModule(idx, subId, wordId){
+  const m = MODULES[idx];
+  if(!m) return;
+  const sub = (m.subModules||[]).find(s=>s.id===subId);
+  if(!sub || !m.words.some(w=>w.id===wordId)) return;
+  if(!Array.isArray(sub.wordIds)) sub.wordIds = [];
+  if(!sub.wordIds.includes(wordId)) sub.wordIds.push(wordId);
+  await saveProgress();
+  render();
+}
+async function deleteSubModule(idx, subId, silent){
+  const m = MODULES[idx];
+  if(!m) return;
+  const sub = (m.subModules||[]).find(s=>s.id===subId);
+  if(!silent && !confirm('"'+(sub&&sub.name?sub.name:'Bu grup')+'" silinsin mi?')) return;
+  m.subModules = (m.subModules||[]).filter(s=>s.id!==subId);
+  if(CUR_SUBMODULE===subId) CUR_SUBMODULE = null;
+  if(SEL_BULK_SUBID===subId) { SELECTED_BULK_WORDS.clear(); SEL_BULK_SUBID=null; delete BULK_PENDING_COLOR[subId]; }
+  if(SEL_SENT_SUBID===subId) { SELECTED_SENTENCES.clear(); SEL_SENT_SUBID=null; delete SENT_PENDING_COLOR_PER_GROUP[subId]; }
+  if(SUB_ADD_OPEN===subId) SUB_ADD_OPEN = null;
+  if(RENAME_SUB_ID===subId) RENAME_SUB_ID = null;
+  const orphanBulkWordIds = m.words.filter(w=>w.origin==='bulk').filter(w=>{
+    const inBulk = (m.subModules||[]).some(s=>subIsBulk(s)&&(s.wordIds||[]).includes(w.id));
+    const inAnySub = (m.subModules||[]).some(s=>(s.wordIds||[]).includes(w.id));
+    return !inBulk && !inAnySub;
+  }).map(w=>w.id);
+  if(orphanBulkWordIds.length>0){
+    m.words = m.words.filter(w=>!orphanBulkWordIds.includes(w.id));
+  }
+  await saveProgress();
+  render();
+}
+async function renameSubModule(idx, subId, newName){
+  const m = MODULES[idx];
+  const sub = (m.subModules||[]).find(s=>s.id===subId);
+  if(!sub) return;
+  sub.name = (newName||'').trim().slice(0,40);
+  await saveProgress();
+  RENAME_SUB_ID = null;
+  render();
+}
+
+function toggleExampleSelection(wordId){
+  if(EDIT_EXAMPLE_WORD_ID !== null) EDIT_EXAMPLE_WORD_ID = null;
+  if(EXAMPLE_SELECTED.has(wordId)) EXAMPLE_SELECTED.delete(wordId);
+  else EXAMPLE_SELECTED.add(wordId);
+  render();
+}
+function clearExampleSelection(){
+  EXAMPLE_SELECTED.clear();
+  render();
+}
+function selectAllExampleWords(){
+  const m = MODULES[EDIT_MODULE];
+  if(!m) return;
+  mainWords(m).forEach(w => { if(hasExample(w)) EXAMPLE_SELECTED.add(w.id); });
+  render();
+}
+function startExampleLesson(){
+  const m = MODULES[EDIT_MODULE];
+  if(!m) return;
+  const validIds = Array.from(EXAMPLE_SELECTED).filter(id => {
+    const w = m.words.find(x=>x.id===id);
+    return w && hasExample(w);
+  });
+  if(validIds.length === 0){
+    alert('Seçili kelimelerde cümle yok. Önce cümle ekleyin veya farklı kelimeler seçin.');
+    return;
+  }
+  CUR_MODULE = EDIT_MODULE;
+  startStep(null, null, validIds);
+}
+
+/* =========================================================
+   RENDER
+   ========================================================= */
+const root = document.getElementById('app');
+
+function render(){
+  clearActiveTimer();
+  clearKeyHandler();
+  if(SCREEN==='loading'){ root.innerHTML = '<div class="empty-note">Yükleniyor...</div>'; return; }
+  if(SCREEN==='list'){ root.innerHTML = renderList(); attachListEvents(); return; }
+  if(SCREEN==='edit'){ root.innerHTML = renderEdit(); attachEditEvents(); return; }
+  if(SCREEN==='lesson'){ root.innerHTML = renderLesson(); attachLessonEvents(); return; }
+  if(SCREEN==='repcomplete'){ root.innerHTML = renderRepComplete(); attachRepCompleteEvents(); return; }
+  if(SCREEN==='modulecomplete'){ root.innerHTML = renderModuleComplete(); attachCompleteEvents(); return; }
+}
+
+function renderList(){
+  let html = `
+  <div class="top">
+    <div class="brand">
+      <span class="eyebrow">ÖSD · A1 - A2 - B1 - B2 - C1</span>
+      <h1>Almanca Kelime Öğrenme Sistemi</h1>
+    </div>
+    <button class="reset-btn" id="resetBtn">İlerlemeyi sıfırla</button>
+  </div>
+  <div class="btn-row" style="justify-content:flex-start;margin-bottom:10px;">
+    <button class="reset-btn" id="exportAllBtn">⬇ Tüm Verileri Yedekle</button>
+    <button class="reset-btn" id="importAllBtn">📤 Yedekten Geri Yükle</button>
+    <input type="file" id="importFileInput" accept="application/json,.json" style="display:none;">
+    <button class="reset-btn" id="connectFileBtn">${LINKED_HANDLE ? '📁 Bağlı ✓' : '📁 Bilgisayara Bağla'}</button>
+    ${INSTALL_PROMPT ? '<button class="reset-btn" id="installAppBtn">📲 Uygulama olarak yükle</button>' : ''}
+  </div>
+  ${RECONNECT_HANDLE_PENDING ? `
+  <div class="card-module" style="margin-bottom:18px;border:1.5px solid var(--amber);">
+    <div class="cat" style="margin-bottom:10px;">🔗 Daha önce bağladığın dosyaya yeniden bağlanmak için onay gerekli.</div>
+    <div class="btn-row" style="justify-content:flex-start;">
+      <button class="btn btn-primary" id="confirmReconnectBtn" style="padding:8px 14px;font-size:13px;">Bağlantıyı Onayla</button>
+    </div>
+  </div>` : ''}
+  <div class="path">`;
+  MODULES.forEach((m,idx)=>{
+    const prog = PROGRESS[m.id];
+    const pct = progPct(prog);
+    const dotClass = prog.done ? 'done' : 'current';
+    const dotContent = prog.done ? '✓' : (idx+1);
+    const mainCount = mainWords(m).length;
+    const bulkCount = m.words.length - mainCount;
+    const sentGroups = (m.subModules||[]).filter(s => s.kind === 'sentence').length;
+    const hasWords = mainCount>0;
+    html += `
+    <div class="node">
+      <div class="node-dot ${dotClass}">${dotContent}</div>
+      <div class="card-module">
+        <div class="card-module-top">
+          ${RENAME_IDX===idx ? `
+          <div class="input-row" style="max-width:220px;">
+            <input type="text" id="renameInput" value="${esc(m.name||'')}" placeholder="Modül ${idx+1}" maxlength="40">
+          </div>` : `<h3>${esc(moduleLabel(m,idx))}</h3>`}
+          <div style="display:flex;gap:6px;align-items:center;">
+            ${prog.done ? '<span class="pill done">tamamlandı</span>' : `<span class="pill">${progLabel(prog)}</span>`}
+            ${RENAME_IDX===idx
+              ? `<button class="reset-btn" data-rename-save="${idx}">Kaydet</button><button class="reset-btn" data-rename-cancel="1">Vazgeç</button>`
+              : `<button class="reset-btn" style="padding:4px 9px;" data-rename="${idx}" title="Adı düzenle">✎ isim</button><button class="reset-btn" style="padding:4px 9px;" data-del="${idx}" title="Sil">− sil</button>`}
+          </div>
+        </div>
+        <div class="cat">${mainCount} kelime${bulkCount>0?` · ${bulkCount} toplu grupta`:''}${sentGroups>0?` · ${sentGroups} cümle grubu`:''}</div>
+        <div class="progress-track"><div class="progress-fill" style="width:${prog.done?100:pct}%"></div></div>
+        <div class="btn-row" style="justify-content:flex-start;margin-top:12px;">
+          <button class="btn btn-ghost" data-edit="${idx}" style="padding:8px 14px;font-size:13px;">✎ Kelimeleri düzenle</button>
+          <button class="btn btn-primary" data-start="${idx}" style="padding:8px 14px;font-size:13px;" ${hasWords?'':'disabled'}>▶ Derse başla</button>
+        </div>
+      </div>
+    </div>`;
+  });
+  html += `</div>
+  <div class="btn-row" style="margin:18px 0 8px;">
+    <button class="btn btn-primary" id="addModBtn">+ Modül ekle</button>
+  </div>
+  <p class="empty-note">${MODULES.length===0 ? 'Henüz modül yok — "+ Modül ekle" butonuna dokun.' : 'Ana modülden "Derse başla" tüm kelimeleri içerir. Cümleli çalışma için: kelime düzenleme → cümle ekle → 📝 çalış ile seç.'}</p>`;
+  return html;
+}
+
+function attachListEvents(){
+  const reset = document.getElementById('resetBtn');
+  if(reset) reset.onclick = async ()=>{
+    if(confirm('Tüm ilerleme sıfırlansın mı? (Kelimeler kalır)')){
+      PROGRESS = defaultProgress();
+      await saveProgress();
+      render();
+    }
+  };
+  const exportBtn = document.getElementById('exportAllBtn');
+  if(exportBtn) exportBtn.onclick = exportAllDataAsJson;
+  const importBtn = document.getElementById('importAllBtn');
+  const importInput = document.getElementById('importFileInput');
+  if(importBtn && importInput) importBtn.onclick = ()=> importInput.click();
+  if(importInput) importInput.onchange = (e)=>{
+    const file = e.target.files && e.target.files[0];
+    importAllDataFromFile(file);
+    importInput.value = '';
+  };
+  const installBtn = document.getElementById('installAppBtn');
+  if(installBtn) installBtn.onclick = installApp;
+  const connectBtn = document.getElementById('connectFileBtn');
+  if(connectBtn) connectBtn.onclick = connectLocalFile;
+  const confirmReconnectBtn = document.getElementById('confirmReconnectBtn');
+  if(confirmReconnectBtn) confirmReconnectBtn.onclick = confirmReconnect;
+  const addBtn = document.getElementById('addModBtn');
+  if(addBtn) addBtn.onclick = addModule;
+  document.querySelectorAll('[data-start]').forEach(el=>{
+    el.onclick = ()=>{
+      CUR_MODULE = parseInt(el.dataset.start,10);
+      RENAME_IDX = null;
+      startStep();
+    };
+  });
+  document.querySelectorAll('[data-edit]').forEach(el=>{
+    el.onclick = ()=>{
+      EDIT_MODULE = parseInt(el.dataset.edit,10);
+      COLOR_FILTER = null;
+      RENAME_IDX = null;
+      SELECTED_WORDS.clear();
+      SELECTED_BULK_WORDS.clear();
+      EXAMPLE_SELECTED.clear();
+      SELECTED_SENTENCES.clear();
+      SEL_SENT_SUBID = null;
+      SENT_PENDING_COLOR_PER_GROUP = {};
+      SENTENCE_COLOR_FILTER = {};
+      SEL_BULK_SUBID = null;
+      BULK_PENDING_COLOR = {};
+      MAIN_PENDING_COLOR = undefined;
+      EDIT_WORD_ID = null;
+      EDIT_EXAMPLE_WORD_ID = null;
+      EDIT_SENTENCE_ID = null;
+      EDIT_SENTENCE_GROUP_ID = null;
+      BULK_ADD_OPEN = false;
+      BULK_SENTENCE_ADD_OPEN = false;
+      SENTENCE_PENDING_COLOR = null;
+      QUICK_SENT_COLOR_ID = null;
+      NEW_WORD_OPEN = false;
+      NEW_WORD_COLOR = null;
+      SUB_ADD_OPEN = null;
+      SCREEN = 'edit';
+      render();
+    };
+  });
+  document.querySelectorAll('[data-del]').forEach(el=>{
+    el.onclick = (e)=>{ e.stopPropagation(); deleteModule(parseInt(el.dataset.del,10)); };
+  });
+  document.querySelectorAll('[data-rename]').forEach(el=>{
+    el.onclick = ()=>{ RENAME_IDX = parseInt(el.dataset.rename,10); render(); };
+  });
+  document.querySelectorAll('[data-rename-cancel]').forEach(el=>{
+    el.onclick = ()=>{ RENAME_IDX = null; render(); };
+  });
+  document.querySelectorAll('[data-rename-save]').forEach(el=>{
+    el.onclick = ()=>{
+      const idx = parseInt(el.dataset.renameSave,10);
+      const inp = document.getElementById('renameInput');
+      renameModule(idx, inp ? inp.value : '');
+    };
+  });
+  const renameInput = document.getElementById('renameInput');
+  if(renameInput){
+    renameInput.focus(); renameInput.select();
+    renameInput.onkeydown = (e)=>{
+      if(e.key==='Enter'){ e.preventDefault(); renameModule(RENAME_IDX, renameInput.value); }
+      if(e.key==='Escape'){ e.preventDefault(); RENAME_IDX=null; render(); }
+    };
+  }
+}
+
+function renderEdit(){
+  const m = MODULES[EDIT_MODULE];
+  if(!m){ return '<div class="empty-note">Modül bulunamadı.</div>'; }
+  const prog = PROGRESS[m.id];
+  const visibleMainWords = mainWords(m);
+
+  let rows = visibleMainWords.map((w)=>{
+    if(COLOR_FILTER && EDIT_WORD_ID!==w.id && (COLOR_FILTER==='none' ? w.color : w.color!==COLOR_FILTER)) return '';
+    const isSel = SELECTED_WORDS.has(w.id);
+    const wHex = wordColorHex(w.color);
+    if(EDIT_WORD_ID===w.id){
+      return `
+      <div class="example-block" style="display:flex;flex-direction:column;gap:10px;margin-bottom:8px;">
+        <div class="input-row" style="max-width:none;">
+          <input type="text" id="editDe" value="${esc(w.de)}" placeholder="Almanca">
+        </div>
+        <div class="input-row" style="max-width:none;">
+          <input type="text" id="editTr" value="${esc(w.tr.join(', '))}" placeholder="Türkçe anlam(lar), virgülle ayır">
+        </div>
+        ${colorPickerHtml('edit', EDIT_WORD_COLOR)}
+        <div class="btn-row" style="justify-content:flex-start;">
+          <button class="btn btn-primary" data-editword-save="${w.id}">Kaydet</button>
+          <button class="btn btn-ghost" data-editword-cancel="1">Vazgeç</button>
+        </div>
+      </div>`;
+    }
+    return `
+    <div class="example-block wrow ${isSel?'word-selected':''}" data-word-id="${w.id}" style="margin-bottom:8px;cursor:pointer;user-select:none;${wHex?`box-shadow:inset 6px 0 0 ${wHex};`:''}">
+      <div class="wrow-main">
+        <span style="width:16px;color:var(--teal);font-weight:700;flex-shrink:0;">${isSel?'✓':''}</span>
+        <div style="flex:1;min-width:0;">
+          <div class="example-de" style="font-size:16px;${deColorStyle(wHex)}">${wHex?`<span class="color-mini" data-quickcolor="${w.id}" title="Rengi değiştir" style="--cdot:${wHex};cursor:pointer;width:14px;height:14px;"></span>`:''}${esc(w.de)}</div>
+          <div class="example-tr">${esc(w.tr.join(' / '))}</div>
+        </div>
+      </div>
+      <div class="wrow-side">
+        <span class="pill">${w.errors||0} Hata</span>
+        <div class="wrow-btns">
+          <button class="reset-btn" data-editword="${w.id}" style="padding:4px 8px;">✎ düzelt</button>
+          <button class="reset-btn" data-rm-id="${w.id}" style="padding:4px 8px;">− sil</button>
+          ${wordSentButtonsHtml(w)}
+        </div>
+      </div>
+    </div>
+    ${wordSentPanelHtml(m, w)}
+    ${QUICK_COLOR_ID===w.id ? `<div class="example-block" style="margin:-2px 0 8px;">${colorPickerHtml('quick', w.color||null)}</div>` : ''}`;
+  }).join('');
+  if(!rows) rows = visibleMainWords.length>0 ? '<p class="empty-note">Bu renkte kelime yok.</p>' : '<p class="empty-note">Bu modülde henüz kelime yok.</p>';
+
+  const filterHtml = visibleMainWords.length>0 ? `
+  <div class="color-picker" style="margin-bottom:14px;">
+    <span class="hint" style="margin:0 2px 0 0;">Renk:</span>
+    <button type="button" class="reset-btn" data-colorfilter="" style="${!COLOR_FILTER?'border-color:var(--ink);':''}">Tümü</button>
+    ${WORD_COLORS.map(c=>`<button type="button" class="color-dot ${COLOR_FILTER===c.key?'active':''}" style="--cdot:${c.hex};" data-colorfilter="${c.key}" title="${c.name} (${visibleMainWords.filter(x=>x.color===c.key).length})"></button>`).join('')}
+    <button type="button" class="color-dot none ${COLOR_FILTER==='none'?'active':''}" data-colorfilter="none" title="Renksiz (${visibleMainWords.filter(x=>!x.color).length})"></button>
+  </div>` : '';
+
+  let mainFilterAction = '';
+  if(COLOR_FILTER){
+    const filteredCount = visibleMainWords.filter(w => COLOR_FILTER==='none' ? !w.color : w.color===COLOR_FILTER).length;
+    if(filteredCount > 0){
+      const flbl = colorFilterLabel(COLOR_FILTER);
+      mainFilterAction = `
+      <div class="btn-row" style="justify-content:flex-start;margin-bottom:14px;">
+        <button class="btn btn-primary" id="startFilteredMainBtn" style="padding:10px 16px;font-size:13px;">▶ Sadece ${esc(flbl)} ile Derse Başla (${filteredCount})</button>
+      </div>`;
+    }
+  }
+
+  const selCount = visibleMainWords.filter(w=>SELECTED_WORDS.has(w.id)).length;
+  const hasMainPending = MAIN_PENDING_COLOR !== undefined;
+  const mainPendingLabel = !hasMainPending ? null :
+    (MAIN_PENDING_COLOR === null ? 'Renksiz' : ((WORD_COLORS.find(c=>c.key===MAIN_PENDING_COLOR)||{}).name || ''));
+
+  const mainSelectionPanel = selCount > 0 ? `
+  <div class="example-block" style="margin-bottom:14px;border:1.5px solid var(--amber);background:var(--amber-tint);">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+      <strong style="font-size:13px;">✓ ${selCount} kelime seçili</strong>
+      <button class="reset-btn" data-main-clearsel="1">Seçimi temizle</button>
+    </div>
+    <div class="hint" style="margin-bottom:6px;">Renk seç, sonra "Kaydet"e bas:</div>
+    ${colorPickerHtml('mainsel', MAIN_PENDING_COLOR)}
+    <div class="btn-row" style="justify-content:flex-start;margin-top:10px;">
+      <button class="btn btn-primary" data-main-savecolor="1" ${!hasMainPending?'disabled':''}>✓ Seçileni Kaydet${mainPendingLabel?' ('+mainPendingLabel+')':''}</button>
+      <button class="btn btn-ghost" id="makeSubBtn">+ Tekrar Modülü (${selCount})</button>
+    </div>
+  </div>` : '';
+
+  const totalWithExample = visibleMainWords.filter(hasExample).length;
+  const exSelCount = visibleMainWords.filter(w => EXAMPLE_SELECTED.has(w.id) && hasExample(w)).length;
+  let exampleStudyPanel = '';
+  if(totalWithExample > 0){
+    exampleStudyPanel = `
+    <div class="example-block" style="margin-bottom:14px;border:1.5px solid var(--teal);background:rgba(31,122,108,0.08);">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;gap:8px;flex-wrap:wrap;">
+        <strong style="font-size:13px;">📝 Cümleli Çalışma — ${exSelCount} / ${totalWithExample} seçili</strong>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;">
+          ${exSelCount>0?`<button class="reset-btn" data-exclearsel="1">Seçimi temizle</button>`:''}
+          <button class="reset-btn" data-exselectall="1">Tüm cümlelileri seç (${totalWithExample})</button>
+        </div>
+      </div>
+      <div class="hint" style="margin-bottom:8px;">Cümleli mod <strong>kelime de→tr · cümle çevirisi · eşleştirme</strong> alıştırmalarıyla çalışır.</div>
+      <div class="btn-row" style="justify-content:flex-start;">
+        <button class="btn btn-primary" data-exstartlesson="1" ${exSelCount===0?'disabled':''} style="padding:10px 16px;font-size:13px;">▶ Cümleli Çalış (${exSelCount})</button>
+      </div>
+    </div>`;
+  }
+
+  const controlsHtml = visibleMainWords.length>0 ? `
+  <div class="btn-row" style="justify-content:flex-start;margin-bottom:14px;">
+    <button class="reset-btn" id="selectAllBtn">Tümünü Seç</button>
+    <button class="reset-btn" id="clearSelBtn">Seçimi Temizle</button>
+    <button class="reset-btn" id="downloadWordsBtn">⬇ .txt indir</button>
+  </div>
+  ${mainSelectionPanel}` : '';
+
+  const subs = m.subModules || [];
+  let subsSection = '';
+  if(subs.length>0){
+    const repeatCards = [], bulkCards = [], sentenceCards = [];
+    subs.forEach((sub,i)=>{
+      if(sub.kind === 'sentence'){
+        const label = subModuleLabel(sub, i, m);
+        const cnt = (sub.sentences||[]).length;
+        if(!SUB_OPEN_IDS.has(sub.id)){
+          sentenceCards.push(`
+          <div class="btn-row" style="justify-content:flex-start;margin-bottom:10px;">
+            <button class="btn btn-ghost" data-subopen="${sub.id}">${esc(label)} ▼</button>
+          </div>`);
+          return;
+        }
+        sentenceCards.push(renderSentenceGroupCard(m, sub, i));
+        return;
+      }
+      const bulk = subIsBulk(sub);
+      const icon = bulk ? '📦' : '🔁';
+      const label = subModuleLabel(sub,i,m);
+      const wordCount = (sub.wordIds||[]).filter(id => m.words.some(w=>w.id===id)).length;
+      if(!SUB_OPEN_IDS.has(sub.id)){
+        const toggleText = bulk ? `${esc(label)} ▼` : `${icon} ${esc(label)} ▼ (${wordCount})`;
+        (bulk?bulkCards:repeatCards).push(`
+      <div class="btn-row" style="justify-content:flex-start;margin-bottom:10px;">
+        <button class="btn btn-ghost" data-subopen="${sub.id}">${toggleText}</button>
+      </div>`); return; }
+      if(bulk){
+        bulkCards.push(renderBulkGroupCard(m, sub, i, prog, wordCount));
+      } else {
+        repeatCards.push(renderRepeatGroupCard(m, sub, i, prog, wordCount));
+      }
+    });
+    subsSection = '';
+    if(sentenceCards.length>0) subsSection += `
+    <div style="margin-top:26px;">
+      <span class="eyebrow">Cümle Grupları</span>
+      <p class="hint" style="margin:4px 0 12px;">Toplu cümleler bu gruplarda. Her grup kendi ders döngüsüne sahiptir (HÖM · TAHMİN · TERS · MİNİ TEST).</p>
+      ${sentenceCards.join('')}
+    </div>`;
+    if(bulkCards.length>0) subsSection += `
+    <div style="margin-top:26px;">
+      <span class="eyebrow">Toplu Eklenen Gruplar</span>
+      <p class="hint" style="margin:4px 0 12px;">Bu kelimeler ana modülde görünmez, sadece bu grupta listelenir.</p>
+      ${bulkCards.join('')}
+    </div>`;
+    if(repeatCards.length>0) subsSection += `
+    <div style="margin-top:26px;">
+      <span class="eyebrow">Tekrar Modülleri</span>
+      <p class="hint" style="margin:4px 0 12px;">Ana listede görünmez; ilerlemesi ${esc(moduleLabel(m,EDIT_MODULE))} ile paylaşılır.</p>
+      ${repeatCards.join('')}
+    </div>`;
+  }
+
+  return `
+  <div class="lesson-head">
+    <div class="lesson-head-row">
+      <span class="back-link" id="backBtn">← Modüller</span>
+      <span class="stage-badge">${esc(moduleLabel(m,EDIT_MODULE))} · ${visibleMainWords.length} kelime</span>
+    </div>
+    <h2 class="lesson-title" style="font-size:20px;">Kelimeleri düzenle</h2>
+    <p class="hint" style="margin-top:6px;">Bir kelimeye uzun bas, seçili hale gelsin. Her kelimede "+ cümle ekle" ile istediğin kadar cümle ekleyip "▶ Derse başla" ile o cümlelerle çalışabilirsin.</p>
+  </div>
+  ${controlsHtml}
+  ${exampleStudyPanel}
+  ${filterHtml}
+  ${mainFilterAction}
+  <div>${rows}</div>
+  <div style="margin-top:26px;">
+    <span class="eyebrow">Kelime Ekleme</span>
+    <p class="hint" style="margin:4px 0 12px;">Tek tek veya toplu ekleyebilirsin.</p>
+  </div>
+  ${NEW_WORD_OPEN ? `
+  <div class="stage-card" style="align-items:stretch;text-align:left;">
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+      <span class="hint">Yeni kelime ekle</span>
+      <button class="reset-btn" id="newWordToggleBtn">Kapat ▲</button>
+    </div>
+    <div class="input-row" style="max-width:none;">
+      <input type="text" id="newDe" placeholder="Almanca (örn. kaufen)">
+    </div>
+    <div class="input-row" style="max-width:none;">
+      <input type="text" id="newTr" placeholder="Türkçe anlam(lar), virgülle ayır">
+    </div>
+    <span class="hint">Renk grubu</span>
+    ${colorPickerHtml('new', NEW_WORD_COLOR)}
+    <div class="btn-row" style="justify-content:flex-start;">
+      <button class="btn btn-primary" id="addWordBtn">+ Ekle</button>
+    </div>
+  </div>
+  ` : `
+  <div class="btn-row" style="justify-content:flex-start;margin-bottom:14px;">
+    <button class="btn btn-ghost" id="newWordToggleBtn">+ Yeni kelime ekle ▼</button>
+  </div>`}
+  ${BULK_ADD_OPEN ? `
+  <div class="stage-card" style="align-items:stretch;text-align:left;margin-top:14px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+      <span class="hint">Toplu ekle — her satıra "almanca : türkçe". Seçili renk uygulanır.</span>
+      <button class="reset-btn" id="bulkToggleBtn">Kapat ▲</button>
+    </div>
+    <textarea class="bulk-input" id="bulkInput" rows="6" placeholder="kaufen : satın almak
+haben : sahip olmak
+gehen : yaya gitmek, gitmek"></textarea>
+    ${colorPickerHtml('new', NEW_WORD_COLOR)}
+    <div class="btn-row" style="justify-content:flex-start;">
+      <button class="btn btn-primary" id="bulkAddBtn">+ Toplu Ekle</button>
+      <button class="btn btn-ghost" id="bulkAddMainBtn">+ Ana Modüle Ekle</button>
+    </div>
+  </div>` : `
+  <div class="btn-row" style="justify-content:flex-start;margin-top:14px;">
+    <button class="btn btn-ghost" id="bulkToggleBtn">+ Toplu kelime ekle ▼</button>
+  </div>`}
+  ${BULK_SENTENCE_ADD_OPEN ? `
+  <div class="stage-card" style="align-items:stretch;text-align:left;margin-top:14px;border:1.5px solid var(--teal);">
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+      <span class="hint">Toplu cümle ekle — her satıra "almanca cümle : türkçe çeviri". Yeni bir <strong>Cümle Grubu</strong> oluşturulur.</span>
+      <button class="reset-btn" id="bulkSentToggleBtn">Kapat ▲</button>
+    </div>
+    <textarea class="bulk-input" id="bulkSentInput" rows="7" placeholder="Ich heiße Ali. : Benim adım Ali.
+Ich wohne in Berlin. : Berlin'de oturuyorum.
+Ich komme aus der Türkei. : Türkiye'den geliyorum."></textarea>
+    ${colorPickerHtml('sent-new', SENTENCE_PENDING_COLOR)}
+    <div class="btn-row" style="justify-content:flex-start;">
+      <button class="btn btn-primary" id="bulkSentAddBtn">+ Toplu Cümle Ekle</button>
+    </div>
+  </div>` : `
+  <div class="btn-row" style="justify-content:flex-start;margin-top:14px;">
+    <button class="btn btn-ghost" id="bulkSentToggleBtn">+ Toplu cümle ekle ▼</button>
+  </div>`}
+  ${subsSection}
+  `;
+}
+
+function renderBulkGroupCard(m, sub, subIdx, prog, wordCount){
+  const allWords = (sub.wordIds||[]).map(id => m.words.find(w=>w.id===id)).filter(Boolean);
+  const isActiveSel = SEL_BULK_SUBID === sub.id;
+  const sel = isActiveSel ? SELECTED_BULK_WORDS : new Set();
+  const selCount = sel.size;
+  const filter = COLOR_FILTER_BULK[sub.id] || null;
+  const filtered = filter
+    ? allWords.filter(w => filter==='none' ? !w.color : w.color === filter)
+    : allWords;
+
+  const subExampleIds = selectedExampleIdsInSub(m, sub);
+  const subExampleCount = subExampleIds.length;
+
+  const filterHtml = allWords.length > 0 ? `
+    <div class="color-picker" style="margin-bottom:10px;">
+      <span class="hint" style="margin:0 2px 0 0;">Renk:</span>
+      <button type="button" class="reset-btn" data-bulk-colorfilter="${sub.id}" data-cf="" style="${!filter?'border-color:var(--ink);':''}">Tümü</button>
+      ${WORD_COLORS.map(c=>`<button type="button" class="color-dot ${filter===c.key?'active':''}" style="--cdot:${c.hex};" data-bulk-colorfilter="${sub.id}" data-cf="${c.key}" title="${c.name} (${allWords.filter(x=>x.color===c.key).length})"></button>`).join('')}
+      <button type="button" class="color-dot none ${filter==='none'?'active':''}" data-bulk-colorfilter="${sub.id}" data-cf="none" title="Renksiz (${allWords.filter(x=>!x.color).length})"></button>
+    </div>` : '';
+
+  let bulkFilterAction = '';
+  if(filter){
+    const filteredCount = allWords.filter(w => filter==='none' ? !w.color : w.color===filter).length;
+    if(filteredCount > 0){
+      const flbl = colorFilterLabel(filter);
+      bulkFilterAction = `
+      <div class="btn-row" style="justify-content:flex-start;margin-top:8px;margin-bottom:6px;">
+        <button class="btn btn-primary" data-substart-filtered="${sub.id}" style="padding:8px 14px;font-size:13px;">▶ Sadece ${esc(flbl)} ile Derse Başla (${filteredCount})</button>
+      </div>`;
+    }
+  }
+
+  const pendingColor = BULK_PENDING_COLOR[sub.id];
+  const hasPending = pendingColor !== undefined;
+  const pendingLabel = !hasPending ? null : (pendingColor === null ? 'Renksiz' : ((WORD_COLORS.find(c=>c.key===pendingColor)||{}).name || ''));
+
+  const selectionPanel = (isActiveSel && selCount > 0) ? `
+    <div class="example-block" style="margin-bottom:10px;border:1.5px solid var(--amber);background:var(--amber-tint);">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+        <strong style="font-size:13px;">✓ ${selCount} kelime seçili</strong>
+        <button class="reset-btn" data-bulk-clearsel="${sub.id}">Seçimi temizle</button>
+      </div>
+      <div class="hint" style="margin-bottom:6px;">Renk seç, sonra "Kaydet"e bas:</div>
+      ${colorPickerHtml('bulksel-'+sub.id, pendingColor)}
+      <div class="btn-row" style="justify-content:flex-start;margin-top:10px;">
+        <button class="btn btn-primary" data-bulk-savecolor="${sub.id}" ${!hasPending?'disabled':''}>✓ Seçileni Kaydet${pendingLabel?' ('+pendingLabel+')':''}</button>
+        <button class="btn btn-ghost" data-bulk-makerepeat="${sub.id}">+ Tekrar Modülü (${selCount})</button>
+      </div>
+    </div>` : '';
+
+  const wordRows = filtered.length > 0 ? filtered.map(w=>{
+    const isSel = sel.has(w.id);
+    const wHex = wordColorHex(w.color);
+    return `
+      <div class="example-block wrow ${isSel?'word-selected':''}" data-bulk-word="${w.id}" data-bulk-sub="${sub.id}" style="margin-bottom:6px;cursor:pointer;user-select:none;${wHex?`box-shadow:inset 6px 0 0 ${wHex};`:''}">
+        <div class="wrow-main">
+          <span style="width:16px;color:var(--teal);font-weight:700;flex-shrink:0;">${isSel?'✓':''}</span>
+          <div style="flex:1;min-width:0;">
+            <div class="example-de" style="font-size:15px;${deColorStyle(wHex)}">${wHex?`<span class="color-mini" data-quickcolor="${w.id}" title="Rengi değiştir" style="--cdot:${wHex};cursor:pointer;width:14px;height:14px;"></span>`:''}${esc(w.de)}</div>
+            <div class="example-tr">${esc(w.tr.join(' / '))}</div>
+          </div>
+        </div>
+        <div class="wrow-side">
+          <div class="wrow-btns">
+            <button class="reset-btn" data-bulk-word-rm="${w.id}" data-bulk-sub="${sub.id}" style="padding:4px 8px;">− çıkar</button>
+            ${wordSentButtonsHtml(w)}
+          </div>
+        </div>
+      </div>
+      ${wordSentPanelHtml(m, w)}
+      ${QUICK_COLOR_ID===w.id ? `<div class="example-block" style="margin:-2px 0 6px;">${colorPickerHtml('quick', w.color||null)}</div>` : ''}`;
+  }).join('') : `<p class="empty-note" style="padding:10px 0;">${filter?'Bu renkte kelime yok.':'Bu grupta kelime yok.'}</p>`;
+
+  const avail = mainWords(m).filter(x=>!(sub.wordIds||[]).includes(x.id));
+  let addFromMainSection = '';
+  if(avail.length>0){
+    if(SUB_ADD_OPEN!==sub.id){
+      addFromMainSection = `<div class="btn-row" style="justify-content:flex-start;margin-top:10px;"><button class="btn btn-ghost" data-subadd-toggle="${sub.id}" style="padding:8px 14px;font-size:13px;">+ Ana modülden kelime ekle ▼</button></div>`;
+    } else {
+      addFromMainSection = `<div style="margin-top:12px;"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;"><span class="hint">Eklemek istediğin kelimeye dokun</span><button class="reset-btn" data-subadd-toggle="${sub.id}">Kapat ▲</button></div>${avail.map(aw=>{
+        const aHex = wordColorHex(aw.color);
+        return `<div class="example-block" style="display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:6px;${aHex?`box-shadow:inset 6px 0 0 ${aHex};`:''}">
+          <div><div class="example-de" style="font-size:15px;${deColorStyle(aHex)}">${esc(aw.de)}</div><div class="example-tr">${esc(aw.tr.join(' / '))}</div></div>
+          <button class="reset-btn" data-subword-add="${aw.id}" data-subword-addsub="${sub.id}">+ ekle</button>
+        </div>`;}).join('')}</div>`;
+    }
+  }
+
+  return `
+  <div class="card-module" style="margin-bottom:14px;">
+    <div class="card-module-top">
+      ${RENAME_SUB_ID===sub.id ? `
+      <div class="input-row" style="max-width:220px;">
+        <input type="text" id="renameSubInput" value="${esc(sub.name||'')}" placeholder="Toplu Grup" maxlength="40">
+      </div>` : `<h3>${esc(subModuleLabel(sub,subIdx,m))}</h3>`}
+      <div style="display:flex;gap:6px;align-items:center;">
+        <span class="pill">${progLabel(prog)}</span>
+        <button class="reset-btn" style="padding:4px 9px;" data-subopen="${sub.id}">Kapat ▲</button>
+        ${RENAME_SUB_ID===sub.id
+          ? `<button class="reset-btn" data-subrename-save="${sub.id}">Kaydet</button><button class="reset-btn" data-subrename-cancel="1">Vazgeç</button>`
+          : `<button class="reset-btn" style="padding:4px 9px;" data-subrename="${sub.id}" title="Adı düzenle">✎ isim</button><button class="reset-btn" style="padding:4px 9px;" data-subdel="${sub.id}" title="Sil">− sil</button>`}
+      </div>
+    </div>
+    <div class="cat">${wordCount} kelime · ana modülde görünmez</div>
+    <div class="btn-row" style="justify-content:flex-start;margin-bottom:10px;margin-top:10px;">
+      <button class="reset-btn" data-bulk-selectall="${sub.id}">Tümünü Seç${filter?' (filtre)':''}</button>
+      <button class="reset-btn" data-bulk-download="${sub.id}">⬇ .txt indir</button>
+      ${(isActiveSel && selCount>0) ? `<button class="reset-btn" data-bulk-clearsel="${sub.id}">Seçimi Temizle</button>` : ''}
+    </div>
+    ${selectionPanel}
+    ${filterHtml}
+    ${bulkFilterAction}
+    <div style="margin-top:6px;">${wordRows}</div>
+    ${addFromMainSection}
+    <div class="btn-row" style="justify-content:flex-start;margin-top:12px;">
+      <button class="btn btn-primary" data-substart="${sub.id}" style="padding:8px 14px;font-size:13px;">▶ Derse başla</button>
+      <button class="btn btn-example" data-substart-example="${sub.id}" ${subExampleCount===0?'disabled':''} style="padding:8px 14px;font-size:13px;" title="Bu grupta 📝 çalış ile seçilmiş cümleli kelimelerle cümleli çalışma başlat">📝 Cümleli (${subExampleCount})</button>
+    </div>
+  </div>`;
+}
+
+function renderRepeatGroupCard(m, sub, subIdx, prog, wordCount){
+  const words = (sub.wordIds||[]).map(id => m.words.find(w=>w.id===id)).filter(Boolean);
+  const subExampleIds = selectedExampleIdsInSub(m, sub);
+  const subExampleCount = subExampleIds.length;
+  return `
+  <div class="card-module" style="margin-bottom:14px;">
+    <div class="card-module-top">
+      ${RENAME_SUB_ID===sub.id ? `
+      <div class="input-row" style="max-width:220px;">
+        <input type="text" id="renameSubInput" value="${esc(sub.name||'')}" placeholder="Tekrar Modülü" maxlength="40">
+      </div>` : `<h3>${esc(subModuleLabel(sub,subIdx,m))}</h3>`}
+      <div style="display:flex;gap:6px;align-items:center;">
+        <span class="pill">${progLabel(prog)}</span>
+        <button class="reset-btn" style="padding:4px 9px;" data-subopen="${sub.id}">Kapat ▲</button>
+        ${RENAME_SUB_ID===sub.id
+          ? `<button class="reset-btn" data-subrename-save="${sub.id}">Kaydet</button><button class="reset-btn" data-subrename-cancel="1">Vazgeç</button>`
+          : `<button class="reset-btn" style="padding:4px 9px;" data-subrename="${sub.id}" title="Adı düzenle">✎ isim</button><button class="reset-btn" style="padding:4px 9px;" data-subdel="${sub.id}" title="Sil">− sil</button>`}
+      </div>
+    </div>
+    <div class="cat">${wordCount} kelime · ana modülle senkronize</div>
+    <div style="margin-top:10px;">${words.map(sw=>{
+      const swHex = wordColorHex(sw.color);
+      return `<div class="example-block wrow" style="margin-bottom:6px;${swHex?`box-shadow:inset 6px 0 0 ${swHex};`:''}">
+        <div class="wrow-main">
+          <div style="flex:1;min-width:0;">
+            <div class="example-de" style="font-size:15px;${deColorStyle(swHex)}">${esc(sw.de)}</div>
+            <div class="example-tr">${esc(sw.tr.join(' / '))}</div>
+          </div>
+        </div>
+        <div class="wrow-side">
+          <div class="wrow-btns">
+            <button class="reset-btn" data-subword-rm="${sw.id}" data-subword-sub="${sub.id}" style="padding:4px 8px;">− çıkar</button>
+            ${wordSentButtonsHtml(sw)}
+          </div>
+        </div>
+      </div>${wordSentPanelHtml(m, sw)}`;}).join('')}</div>
+    ${(()=>{
+      const avail = mainWords(m).filter(x=>!(sub.wordIds||[]).includes(x.id));
+      if(avail.length===0) return '';
+      if(SUB_ADD_OPEN!==sub.id) return `<div class="btn-row" style="justify-content:flex-start;margin-top:10px;"><button class="btn btn-ghost" data-subadd-toggle="${sub.id}" style="padding:8px 14px;font-size:13px;">+ Ana modülden kelime ekle ▼</button></div>`;
+      return `<div style="margin-top:12px;"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;"><span class="hint">Eklemek istediğin kelimeye dokun</span><button class="reset-btn" data-subadd-toggle="${sub.id}">Kapat ▲</button></div>${avail.map(aw=>{
+        const aHex = wordColorHex(aw.color);
+        return `<div class="example-block" style="display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:6px;${aHex?`box-shadow:inset 6px 0 0 ${aHex};`:''}">
+          <div><div class="example-de" style="font-size:15px;${deColorStyle(aHex)}">${esc(aw.de)}</div><div class="example-tr">${esc(aw.tr.join(' / '))}</div></div>
+          <button class="reset-btn" data-subword-add="${aw.id}" data-subword-addsub="${sub.id}">+ ekle</button>
+        </div>`;}).join('')}</div>`;
+    })()}
+    <div class="btn-row" style="justify-content:flex-start;margin-top:12px;">
+      <button class="btn btn-primary" data-substart="${sub.id}" style="padding:8px 14px;font-size:13px;">▶ Derse başla</button>
+      <button class="btn btn-example" data-substart-example="${sub.id}" ${subExampleCount===0?'disabled':''} style="padding:8px 14px;font-size:13px;" title="Bu grupta 📝 çalış ile seçilmiş cümleli kelimelerle cümleli çalışma başlat">📝 Cümleli (${subExampleCount})</button>
+    </div>
+  </div>`;
+}
+
+function wordSentButtonsHtml(w){
+  const has = hasExample(w);
+  const open = WORD_SENT_OPEN.has(w.id);
+  return (has ? `<button class="btn btn-primary" data-wstart="${w.id}" style="padding:4px 10px;font-size:12px;">▶ Derse başla</button>` : '')
+    + `<button class="reset-btn" data-wsent-toggle="${w.id}" style="padding:4px 8px;">${has ? 'Cümleler '+(open?'▲':'▼') : '+ cümle ekle'}</button>`
+    + exampleSelButtonHtml(w);
+}
+function wordSentPanelHtml(m, w){ return WORD_SENT_OPEN.has(w.id) ? renderWordSentencePanel(m, w) : ''; }
+let SENT_FOCUS = null;
+function sentAddFormHtml(m, sub){
+  const open = SENT_ADD_OPEN.has(sub.id);
+  if(!open) return `<div class="btn-row" style="justify-content:flex-start;margin-top:10px;"><button class="btn btn-ghost" data-sentadd-toggle="${esc(sub.id)}" style="padding:8px 14px;font-size:13px;">+ Cümle ekle ▼</button></div>`;
+  return `
+  <div class="example-block" style="margin-top:10px;display:flex;flex-direction:column;gap:8px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+      <span class="hint">Yeni cümle ekle</span>
+      <button class="reset-btn" data-sentadd-toggle="${esc(sub.id)}">Kapat ▲</button>
+    </div>
+    <div class="input-row" style="max-width:none;"><input type="text" id="sentAddDe_${esc(sub.id)}" placeholder="Almanca cümle"></div>
+    <div class="input-row" style="max-width:none;"><input type="text" id="sentAddTr_${esc(sub.id)}" placeholder="Türkçe çeviri"></div>
+    <div class="btn-row" style="justify-content:flex-start;"><button class="btn btn-primary" data-sentadd-save="${esc(sub.id)}" style="padding:8px 14px;font-size:13px;">+ Ekle</button></div>
+  </div>`;
+}
+
+function renderSentenceGroupCard(m, sub, subIdx){
+  const sentences = sub.sentences || [];
+  const isActiveSel = SEL_SENT_SUBID === sub.id;
+  const sel = isActiveSel ? SELECTED_SENTENCES : new Set();
+  const selCount = sel.size;
+  const filter = SENTENCE_COLOR_FILTER[sub.id] || null;
+  const filtered = filter
+    ? sentences.filter(sc => filter==='none' ? !sc.color : sc.color === filter)
+    : sentences;
+
+  const prog = sub.progress || { step: 0 };
+  const progLbl = Math.floor((prog.step||0) / SENTENCE_STAGE_TYPES.length) + '/' + REPS;
+
+  const filterHtml = sentences.length > 0 ? `
+    <div class="color-picker" style="margin-bottom:10px;">
+      <span class="hint" style="margin:0 2px 0 0;">Renk:</span>
+      <button type="button" class="reset-btn" data-sent-colorfilter="${sub.id}" data-cf="" style="${!filter?'border-color:var(--ink);':''}">Tümü</button>
+      ${WORD_COLORS.map(c=>`<button type="button" class="color-dot ${filter===c.key?'active':''}" style="--cdot:${c.hex};" data-sent-colorfilter="${sub.id}" data-cf="${c.key}" title="${c.name} (${sentences.filter(x=>x.color===c.key).length})"></button>`).join('')}
+      <button type="button" class="color-dot none ${filter==='none'?'active':''}" data-sent-colorfilter="${sub.id}" data-cf="none" title="Renksiz (${sentences.filter(x=>!x.color).length})"></button>
+    </div>` : '';
+
+  const pendingColor = SENT_PENDING_COLOR_PER_GROUP[sub.id];
+  const hasPending = pendingColor !== undefined;
+  const pendingLabel = !hasPending ? null : (pendingColor === null ? 'Renksiz' : ((WORD_COLORS.find(c=>c.key===pendingColor)||{}).name || ''));
+
+  const selectionPanel = (isActiveSel && selCount > 0) ? `
+    <div class="example-block" style="margin-bottom:10px;border:1.5px solid var(--amber);background:var(--amber-tint);">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+        <strong style="font-size:13px;">✓ ${selCount} cümle seçili</strong>
+        <button class="reset-btn" data-sent-clearsel="${sub.id}">Seçimi temizle</button>
+      </div>
+      <div class="hint" style="margin-bottom:6px;">Renk seç, sonra "Kaydet"e bas:</div>
+      ${colorPickerHtml('sentsel-'+sub.id, pendingColor)}
+      <div class="btn-row" style="justify-content:flex-start;margin-top:10px;">
+        <button class="btn btn-primary" data-sent-savecolor="${sub.id}" ${!hasPending?'disabled':''}>✓ Seçileni Kaydet${pendingLabel?' ('+pendingLabel+')':''}</button>
+      </div>
+    </div>` : '';
+
+  const sentenceRows = filtered.length > 0 ? filtered.map(sc=>{
+    const isSel = sel.has(sc.id);
+    const scHex = wordColorHex(sc.color);
+    if(EDIT_SENTENCE_ID === sc.id && EDIT_SENTENCE_GROUP_ID === sub.id){
+      return `<div class="example-block" style="display:flex;flex-direction:column;gap:10px;margin-bottom:8px;">
+        <div class="input-row" style="max-width:none;">
+          <input type="text" id="editSentDe" value="${esc(sc.de)}" placeholder="Almanca cümle">
+        </div>
+        <div class="input-row" style="max-width:none;">
+          <input type="text" id="editSentTr" value="${esc(sc.tr)}" placeholder="Türkçe çeviri">
+        </div>
+        <div class="btn-row" style="justify-content:flex-start;">
+          <button class="btn btn-primary" data-sent-save="${sc.id}" data-sent-group="${sub.id}">Kaydet</button>
+          <button class="btn btn-ghost" data-sent-cancel="1">Vazgeç</button>
+        </div>
+      </div>`;
+    }
+    return `<div class="example-block ${isSel?'word-selected':''}" data-sent-item="${sc.id}" data-sent-sub="${sub.id}" style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:6px;cursor:pointer;user-select:none;${scHex?`box-shadow:inset 6px 0 0 ${scHex};`:''}">
+      <div style="display:flex;align-items:center;gap:10px;flex:1;min-width:0;">
+        <span style="width:16px;color:var(--teal);font-weight:700;flex-shrink:0;">${isSel?'✓':''}</span>
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:14px;font-style:italic;line-height:1.35;${deColorStyle(scHex)}word-break:break-word;overflow-wrap:anywhere;">${esc(sc.de)}</div>
+          <div style="font-size:12px;color:var(--ink-soft);margin-top:2px;line-height:1.3;word-break:break-word;overflow-wrap:anywhere;">${esc(sc.tr)}</div>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0;">
+        <div style="display:flex;gap:4px;flex-wrap:wrap;justify-content:flex-end;">
+          ${scHex?`<span class="color-mini" data-sent-colorpick="${sc.id}" data-sent-colorpick-sub="${sub.id}" style="--cdot:${scHex};cursor:pointer;width:14px;height:14px;"></span>`:''}
+          <button class="reset-btn" data-sent-edit="${sc.id}" data-sent-edit-group="${sub.id}" style="padding:4px 8px;">✎ düzelt</button>
+          <button class="reset-btn" data-sent-rm="${sc.id}" data-sent-rm-group="${sub.id}" style="padding:4px 8px;">− sil</button>
+        </div>
+      </div>
+    </div>
+    ${QUICK_SENT_COLOR_ID === sc.id ? `<div class="example-block" style="margin:-2px 0 6px;">${colorPickerHtml('sentquick-'+sc.id, sc.color||null)}</div>` : ''}`;
+  }).join('') : `<p class="empty-note" style="padding:10px 0;">${filter?'Bu renkte cümle yok.':'Bu grupta cümle yok.'}</p>`;
+
+  return `
+  <div class="card-module" style="margin-bottom:14px;">
+    <div class="card-module-top">
+      ${RENAME_SUB_ID===sub.id ? `
+      <div class="input-row" style="max-width:220px;">
+        <input type="text" id="renameSubInput" value="${esc(sub.name||'')}" placeholder="Cümle Grubu" maxlength="40">
+      </div>` : `<h3>${esc(subModuleLabel(sub, subIdx, m))}</h3>`}
+      <div style="display:flex;gap:6px;align-items:center;">
+        <span class="pill">${progLbl}</span>
+        <button class="reset-btn" style="padding:4px 9px;" data-subopen="${sub.id}">Kapat ▲</button>
+        ${RENAME_SUB_ID===sub.id
+          ? `<button class="reset-btn" data-subrename-save="${sub.id}">Kaydet</button><button class="reset-btn" data-subrename-cancel="1">Vazgeç</button>`
+          : `<button class="reset-btn" style="padding:4px 9px;" data-subrename="${sub.id}" title="Adı düzenle">✎ isim</button><button class="reset-btn" style="padding:4px 9px;" data-subdel="${sub.id}" title="Sil">− sil</button>`}
+      </div>
+    </div>
+    <div class="cat">${sentences.length} cümle · kendi ilerlemesi var</div>
+    <div class="btn-row" style="justify-content:flex-start;margin-bottom:10px;margin-top:10px;">
+      <button class="reset-btn" data-sent-selectall="${sub.id}">Tümünü Seç${filter?' (filtre)':''}</button>
+      ${(isActiveSel && selCount>0) ? `<button class="reset-btn" data-sent-clearsel="${sub.id}">Seçimi Temizle</button>` : ''}
+    </div>
+    ${selectionPanel}
+    ${filterHtml}
+    <div style="margin-top:6px;">${sentenceRows}</div>
+    ${sentAddFormHtml(m, sub)}
+    <div class="btn-row" style="justify-content:flex-start;margin-top:12px;">
+      <button class="btn btn-primary" data-sent-start="${sub.id}" style="padding:8px 14px;font-size:13px;">▶ Cümle Çalış</button>
+      ${selCount>0 ? `<button class="btn btn-example" data-sent-start-sel="${sub.id}" style="padding:8px 14px;font-size:13px;">▶ Sadece Seçili (${selCount})</button>` : ''}
+    </div>
+  </div>`;
+}
+
+function renderWordSentencePanel(m, w){
+  const sub = sentOwner(m, 'w:'+w.id);
+  const subIdx = -1;
+  const sentences = sub.sentences || [];
+  const isActiveSel = SEL_SENT_SUBID === sub.id;
+  const sel = isActiveSel ? SELECTED_SENTENCES : new Set();
+  const selCount = sel.size;
+  const filter = SENTENCE_COLOR_FILTER[sub.id] || null;
+  const filtered = filter
+    ? sentences.filter(sc => filter==='none' ? !sc.color : sc.color === filter)
+    : sentences;
+
+  const prog = sub.progress || { step: 0 };
+  const progLbl = Math.floor((prog.step||0) / SENTENCE_STAGE_TYPES.length) + '/' + REPS;
+
+  const filterHtml = sentences.length > 0 ? `
+    <div class="color-picker" style="margin-bottom:10px;">
+      <span class="hint" style="margin:0 2px 0 0;">Renk:</span>
+      <button type="button" class="reset-btn" data-sent-colorfilter="${sub.id}" data-cf="" style="${!filter?'border-color:var(--ink);':''}">Tümü</button>
+      ${WORD_COLORS.map(c=>`<button type="button" class="color-dot ${filter===c.key?'active':''}" style="--cdot:${c.hex};" data-sent-colorfilter="${sub.id}" data-cf="${c.key}" title="${c.name} (${sentences.filter(x=>x.color===c.key).length})"></button>`).join('')}
+      <button type="button" class="color-dot none ${filter==='none'?'active':''}" data-sent-colorfilter="${sub.id}" data-cf="none" title="Renksiz (${sentences.filter(x=>!x.color).length})"></button>
+    </div>` : '';
+
+  const pendingColor = SENT_PENDING_COLOR_PER_GROUP[sub.id];
+  const hasPending = pendingColor !== undefined;
+  const pendingLabel = !hasPending ? null : (pendingColor === null ? 'Renksiz' : ((WORD_COLORS.find(c=>c.key===pendingColor)||{}).name || ''));
+
+  const selectionPanel = (isActiveSel && selCount > 0) ? `
+    <div class="example-block" style="margin-bottom:10px;border:1.5px solid var(--amber);background:var(--amber-tint);">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+        <strong style="font-size:13px;">✓ ${selCount} cümle seçili</strong>
+        <button class="reset-btn" data-sent-clearsel="${sub.id}">Seçimi temizle</button>
+      </div>
+      <div class="hint" style="margin-bottom:6px;">Renk seç, sonra "Kaydet"e bas:</div>
+      ${colorPickerHtml('sentsel-'+sub.id, pendingColor)}
+      <div class="btn-row" style="justify-content:flex-start;margin-top:10px;">
+        <button class="btn btn-primary" data-sent-savecolor="${sub.id}" ${!hasPending?'disabled':''}>✓ Seçileni Kaydet${pendingLabel?' ('+pendingLabel+')':''}</button>
+      </div>
+    </div>` : '';
+
+  const sentenceRows = filtered.length > 0 ? filtered.map(sc=>{
+    const isSel = sel.has(sc.id);
+    const scHex = wordColorHex(sc.color);
+    if(EDIT_SENTENCE_ID === sc.id && EDIT_SENTENCE_GROUP_ID === sub.id){
+      return `<div class="example-block" style="display:flex;flex-direction:column;gap:10px;margin-bottom:8px;">
+        <div class="input-row" style="max-width:none;">
+          <input type="text" id="editSentDe" value="${esc(sc.de)}" placeholder="Almanca cümle">
+        </div>
+        <div class="input-row" style="max-width:none;">
+          <input type="text" id="editSentTr" value="${esc(sc.tr)}" placeholder="Türkçe çeviri">
+        </div>
+        <div class="btn-row" style="justify-content:flex-start;">
+          <button class="btn btn-primary" data-sent-save="${sc.id}" data-sent-group="${sub.id}">Kaydet</button>
+          <button class="btn btn-ghost" data-sent-cancel="1">Vazgeç</button>
+        </div>
+      </div>`;
+    }
+    return `<div class="example-block ${isSel?'word-selected':''}" data-sent-item="${sc.id}" data-sent-sub="${sub.id}" style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:6px;cursor:pointer;user-select:none;${scHex?`box-shadow:inset 6px 0 0 ${scHex};`:''}">
+      <div style="display:flex;align-items:center;gap:10px;flex:1;min-width:0;">
+        <span style="width:16px;color:var(--teal);font-weight:700;flex-shrink:0;">${isSel?'✓':''}</span>
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:14px;font-style:italic;line-height:1.35;${deColorStyle(scHex)}word-break:break-word;overflow-wrap:anywhere;">${esc(sc.de)}</div>
+          <div style="font-size:12px;color:var(--ink-soft);margin-top:2px;line-height:1.3;word-break:break-word;overflow-wrap:anywhere;">${esc(sc.tr)}</div>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0;">
+        <div style="display:flex;gap:4px;flex-wrap:wrap;justify-content:flex-end;">
+          ${scHex?`<span class="color-mini" data-sent-colorpick="${sc.id}" data-sent-colorpick-sub="${sub.id}" style="--cdot:${scHex};cursor:pointer;width:14px;height:14px;"></span>`:''}
+          <button class="reset-btn" data-sent-edit="${sc.id}" data-sent-edit-group="${sub.id}" style="padding:4px 8px;">✎ düzelt</button>
+          <button class="reset-btn" data-sent-rm="${sc.id}" data-sent-rm-group="${sub.id}" style="padding:4px 8px;">− sil</button>
+        </div>
+      </div>
+    </div>
+    ${QUICK_SENT_COLOR_ID === sc.id ? `<div class="example-block" style="margin:-2px 0 6px;">${colorPickerHtml('sentquick-'+sc.id, sc.color||null)}</div>` : ''}`;
+  }).join('') : `<p class="empty-note" style="padding:10px 0;">${filter?'Bu renkte cümle yok.':'Bu grupta cümle yok.'}</p>`;
+
+  return `
+  <div class="sent-panel">
+    <div class="cat">${sentences.length} cümle · ${progLbl}</div>
+    <div class="btn-row" style="justify-content:flex-start;margin-bottom:10px;margin-top:10px;">
+      <button class="reset-btn" data-sent-selectall="${sub.id}">Tümünü Seç${filter?' (filtre)':''}</button>
+      ${(isActiveSel && selCount>0) ? `<button class="reset-btn" data-sent-clearsel="${sub.id}">Seçimi Temizle</button>` : ''}
+    </div>
+    ${selectionPanel}
+    ${filterHtml}
+    <div style="margin-top:6px;">${sentenceRows}</div>
+    ${sentAddFormHtml(m, sub)}
+    <div class="btn-row" style="justify-content:flex-start;margin-top:12px;">
+      <button class="btn btn-primary" data-sent-start="${sub.id}" style="padding:8px 14px;font-size:13px;">▶ Derse başla</button>
+      ${selCount>0 ? `<button class="btn btn-example" data-sent-start-sel="${sub.id}" style="padding:8px 14px;font-size:13px;">▶ Sadece Seçili (${selCount})</button>` : ''}
+    </div>
+  </div>`;
+}
+
+function goList(){
+  SCREEN='list'; session=null; RENAME_IDX=null; RENAME_SUB_ID=null;
+  CUR_SUBMODULE=null; EDIT_WORD_ID=null; EDIT_EXAMPLE_WORD_ID=null;
+  BULK_ADD_OPEN=false; BULK_SENTENCE_ADD_OPEN=false;
+  NEW_WORD_OPEN=false; NEW_WORD_COLOR=null; SUB_ADD_OPEN=null;
+  SENTENCE_PENDING_COLOR=null; QUICK_SENT_COLOR_ID=null;
+  EDIT_SENTENCE_ID=null; EDIT_SENTENCE_GROUP_ID=null;
+  SUB_OPEN_IDS.clear(); SELECTED_WORDS.clear(); SELECTED_BULK_WORDS.clear();
+  EXAMPLE_SELECTED.clear(); SELECTED_SENTENCES.clear();
+  SEL_SENT_SUBID=null; SENT_PENDING_COLOR_PER_GROUP={}; SENTENCE_COLOR_FILTER={};
+  SEL_BULK_SUBID=null; BULK_PENDING_COLOR={}; MAIN_PENDING_COLOR=undefined; COLOR_FILTER=null; QUICK_COLOR_ID=null;
+  clearKeyHandler();
+  render();
+}
+
+function attachEditEvents(){
+  const back = document.getElementById('backBtn');
+  if(back) back.onclick = goList;
+
+  document.querySelectorAll('[data-word-id]').forEach(el=>{
+    el.onclick = (e)=>{
+      if(e.target.closest('button, input, textarea, [data-quickcolor]')) return;
+      toggleWordSelection(el.dataset.wordId);
+    };
+  });
+
+  document.querySelectorAll('[data-rm-id]').forEach(el=>{
+    el.onmousedown = el.ontouchstart = (e)=> e.stopPropagation();
+    el.onclick = (e)=>{ e.stopPropagation(); removeWordFromModule(EDIT_MODULE, el.dataset.rmId); };
+  });
+  document.querySelectorAll('[data-editword]').forEach(el=>{
+    el.onmousedown = el.ontouchstart = (e)=> e.stopPropagation();
+    el.onclick = (e)=>{
+      e.stopPropagation();
+      EDIT_WORD_ID = el.dataset.editword;
+      EDIT_EXAMPLE_WORD_ID = null;
+      const ew = MODULES[EDIT_MODULE].words.find(w=>w.id===EDIT_WORD_ID);
+      EDIT_WORD_COLOR = ew ? (ew.color||null) : null;
+      render();
+    };
+  });
+  document.querySelectorAll('[data-editword-cancel]').forEach(el=>{
+    el.onclick = ()=>{ EDIT_WORD_ID = null; render(); };
+  });
+  document.querySelectorAll('[data-editword-save]').forEach(el=>{
+    el.onclick = ()=>{
+      const wId = el.dataset.editwordSave;
+      const deInp2 = document.getElementById('editDe');
+      const trInp2 = document.getElementById('editTr');
+      updateWordInModule(EDIT_MODULE, wId, deInp2?deInp2.value:'', trInp2?trInp2.value:'');
+    };
+  });
+  const editDeInp = document.getElementById('editDe');
+  const editTrInp = document.getElementById('editTr');
+  if(editDeInp){
+    editDeInp.focus(); editDeInp.select();
+    const saveOnEnter = (e)=>{
+      if(e.key==='Enter'){ e.preventDefault(); updateWordInModule(EDIT_MODULE, EDIT_WORD_ID, editDeInp.value, editTrInp?editTrInp.value:''); }
+      if(e.key==='Escape'){ e.preventDefault(); EDIT_WORD_ID=null; render(); }
+    };
+    editDeInp.onkeydown = saveOnEnter;
+    if(editTrInp) editTrInp.onkeydown = saveOnEnter;
+  }
+
+  document.querySelectorAll('[data-wstart]').forEach(el=>{
+    el.onmousedown = el.ontouchstart = (e)=> e.stopPropagation();
+    el.onclick = (e)=>{
+      e.stopPropagation();
+      const m = MODULES[EDIT_MODULE];
+      const o = sentOwner(m, 'w:'+el.dataset.wstart);
+      if(!o) return;
+      const ids = (o.sentences||[]).filter(sc=>sc.de||sc.tr).map(sc=>sc.id);
+      if(ids.length===0){ alert('Bu kelimede cümle yok.'); return; }
+      startSentenceStep(EDIT_MODULE, o.id, ids, null);
+    };
+  });
+  document.querySelectorAll('[data-wsent-toggle]').forEach(el=>{
+    el.onmousedown = el.ontouchstart = (e)=> e.stopPropagation();
+    el.onclick = (e)=>{
+      e.stopPropagation();
+      const id = el.dataset.wsentToggle;
+      if(WORD_SENT_OPEN.has(id)){ WORD_SENT_OPEN.delete(id); }
+      else {
+        WORD_SENT_OPEN.add(id);
+        const w = MODULES[EDIT_MODULE].words.find(x=>x.id===id);
+        if(w && !hasExample(w)){ SENT_ADD_OPEN.add('w:'+id); SENT_FOCUS = 'w:'+id; }
+      }
+      render();
+    };
+  });
+  document.querySelectorAll('[data-sentadd-toggle]').forEach(el=>{
+    el.onclick = (e)=>{
+      e.stopPropagation();
+      const id = el.dataset.sentaddToggle;
+      if(SENT_ADD_OPEN.has(id)) SENT_ADD_OPEN.delete(id); else { SENT_ADD_OPEN.add(id); SENT_FOCUS = id; }
+      render();
+    };
+  });
+  document.querySelectorAll('[data-sentadd-save]').forEach(el=>{
+    const id = el.dataset.sentaddSave;
+    const de = document.getElementById('sentAddDe_'+id), tr = document.getElementById('sentAddTr_'+id);
+    const go = async ()=>{
+      const ok = await addSentenceToOwner(EDIT_MODULE, id, de?de.value:'', tr?tr.value:'');
+      if(ok){ SENT_FOCUS = id; render(); }
+    };
+    el.onclick = go;
+    [de,tr].forEach(inp=>{ if(inp) inp.onkeydown = (e)=>{ if(e.key==='Enter'){ e.preventDefault(); go(); } }; });
+  });
+  if(SENT_FOCUS){
+    const f = document.getElementById('sentAddDe_'+SENT_FOCUS);
+    SENT_FOCUS = null;
+    if(f) f.focus();
+  }
+
+  document.querySelectorAll('[data-selexample]').forEach(el=>{
+    el.onmousedown = el.ontouchstart = (e)=> e.stopPropagation();
+    el.onclick = (e)=>{ e.stopPropagation(); toggleExampleSelection(el.dataset.selexample); };
+  });
+  document.querySelectorAll('[data-unselexample]').forEach(el=>{
+    el.onmousedown = el.ontouchstart = (e)=> e.stopPropagation();
+    el.onclick = (e)=>{ e.stopPropagation(); toggleExampleSelection(el.dataset.unselexample); };
+  });
+  document.querySelectorAll('[data-exclearsel]').forEach(el=>{
+    el.onclick = ()=> clearExampleSelection();
+  });
+  document.querySelectorAll('[data-exselectall]').forEach(el=>{
+    el.onclick = ()=> selectAllExampleWords();
+  });
+  document.querySelectorAll('[data-exstartlesson]').forEach(el=>{
+    el.onclick = ()=> startExampleLesson();
+  });
+
+  document.querySelectorAll('[data-sent-item]').forEach(el=>{
+    el.onclick = (e)=>{
+      if(e.target.closest('button, [data-sent-colorpick]')) return;
+      toggleSentenceSelection(el.dataset.sentSub, el.dataset.sentItem);
+    };
+  });
+  document.querySelectorAll('[data-sent-clearsel]').forEach(el=>{
+    el.onclick = ()=>{
+      const subId = el.dataset.sentClearsel;
+      if(SEL_SENT_SUBID === subId){
+        SELECTED_SENTENCES.clear();
+        SEL_SENT_SUBID = null;
+        delete SENT_PENDING_COLOR_PER_GROUP[subId];
+      }
+      render();
+    };
+  });
+  document.querySelectorAll('[data-sent-selectall]').forEach(el=>{
+    el.onclick = ()=>{
+      const subId = el.dataset.sentSelectall;
+      const m = MODULES[EDIT_MODULE];
+      const sub = sentOwner(m, subId);
+      if(!sub) return;
+      if(SEL_SENT_SUBID !== subId){ SELECTED_SENTENCES.clear(); SEL_SENT_SUBID = subId; }
+      const filter = SENTENCE_COLOR_FILTER[subId] || null;
+      (sub.sentences||[]).forEach(sc=>{
+        if(filter){
+          if(filter === 'none' && sc.color) return;
+          if(filter !== 'none' && sc.color !== filter) return;
+        }
+        SELECTED_SENTENCES.add(sc.id);
+      });
+      render();
+    };
+  });
+  document.querySelectorAll('[data-sent-savecolor]').forEach(el=>{
+    el.onclick = async ()=>{
+      const subId = el.dataset.sentSavecolor;
+      const color = SENT_PENDING_COLOR_PER_GROUP[subId];
+      if(color === undefined) return;
+      delete SENT_PENDING_COLOR_PER_GROUP[subId];
+      await assignColorToSentenceSelection(EDIT_MODULE, subId, color);
+    };
+  });
+  document.querySelectorAll('[data-sent-rm]').forEach(el=>{
+    el.onmousedown = el.ontouchstart = (e)=> e.stopPropagation();
+    el.onclick = (e)=>{ e.stopPropagation(); removeSentenceFromGroup(EDIT_MODULE, el.dataset.sentRmGroup, el.dataset.sentRm); };
+  });
+  document.querySelectorAll('[data-sent-edit]').forEach(el=>{
+    el.onmousedown = el.ontouchstart = (e)=> e.stopPropagation();
+    el.onclick = (e)=>{
+      e.stopPropagation();
+      EDIT_SENTENCE_ID = el.dataset.sentEdit;
+      EDIT_SENTENCE_GROUP_ID = el.dataset.sentEditGroup;
+      render();
+    };
+  });
+  document.querySelectorAll('[data-sent-save]').forEach(el=>{
+    el.onclick = async ()=>{
+      const de = document.getElementById('editSentDe');
+      const tr = document.getElementById('editSentTr');
+      if(!de || !tr) return;
+      const sId = el.dataset.sentSave;
+      const gId = el.dataset.sentGroup;
+      EDIT_SENTENCE_ID = null; EDIT_SENTENCE_GROUP_ID = null;
+      await updateSentenceInGroup(EDIT_MODULE, gId, sId, de.value, tr.value, null);
+    };
+  });
+  document.querySelectorAll('[data-sent-cancel]').forEach(el=>{
+    el.onclick = ()=>{ EDIT_SENTENCE_ID = null; EDIT_SENTENCE_GROUP_ID = null; render(); };
+  });
+  document.querySelectorAll('[data-sent-colorpick]').forEach(el=>{
+    el.onmousedown = el.ontouchstart = (e)=> e.stopPropagation();
+    el.onclick = (e)=>{
+      e.stopPropagation();
+      const sId = el.dataset.sentColorpick;
+      QUICK_SENT_COLOR_ID = (QUICK_SENT_COLOR_ID === sId) ? null : sId;
+      render();
+    };
+  });
+  document.querySelectorAll('[data-sent-colorfilter]').forEach(el=>{
+    el.onclick = ()=>{
+      const subId = el.dataset.sentColorfilter;
+      SENTENCE_COLOR_FILTER[subId] = el.dataset.cf || null;
+      render();
+    };
+  });
+  document.querySelectorAll('[data-sent-start]').forEach(el=>{
+    el.onclick = ()=>{
+      const subId = el.dataset.sentStart;
+      const m = MODULES[EDIT_MODULE];
+      const sub = sentOwner(m, subId);
+      if(!sub) return;
+      const allIds = (sub.sentences||[]).map(sc => sc.id);
+      if(allIds.length === 0){ alert('Bu grupta cümle yok.'); return; }
+      if(!sub.progress) sub.progress = { step: 0 };
+      startSentenceStep(EDIT_MODULE, subId, allIds, null);
+    };
+  });
+  document.querySelectorAll('[data-sent-start-sel]').forEach(el=>{
+    el.onclick = ()=>{
+      const subId = el.dataset.sentStartSel;
+      const selIds = Array.from(SELECTED_SENTENCES);
+      if(selIds.length === 0) return;
+      const m = MODULES[EDIT_MODULE];
+      const sub = sentOwner(m, subId);
+      if(!sub) return;
+      if(!sub.progress) sub.progress = { step: 0 };
+      startSentenceStep(EDIT_MODULE, subId, selIds, null);
+    };
+  });
+
+  const bulkSentToggleBtn = document.getElementById('bulkSentToggleBtn');
+  if(bulkSentToggleBtn) bulkSentToggleBtn.onclick = ()=>{ BULK_SENTENCE_ADD_OPEN = !BULK_SENTENCE_ADD_OPEN; render(); };
+  const bulkSentAddBtn = document.getElementById('bulkSentAddBtn');
+  const bulkSentInp = document.getElementById('bulkSentInput');
+  if(bulkSentAddBtn) bulkSentAddBtn.onclick = async ()=>{
+    await bulkAddSentencesToModule(EDIT_MODULE, bulkSentInp ? bulkSentInp.value : '');
+    BULK_SENTENCE_ADD_OPEN = false;
+    render();
+  };
+
+  const selAllBtn = document.getElementById('selectAllBtn');
+  if(selAllBtn) selAllBtn.onclick = ()=> selectAllWords(MODULES[EDIT_MODULE]);
+  const clearBtn = document.getElementById('clearSelBtn');
+  if(clearBtn) clearBtn.onclick = clearSelection;
+  const downloadBtn = document.getElementById('downloadWordsBtn');
+  if(downloadBtn) downloadBtn.onclick = ()=> downloadModuleWordsAsTxt(EDIT_MODULE);
+  const makeSubBtn = document.getElementById('makeSubBtn');
+  if(makeSubBtn) makeSubBtn.onclick = ()=> createSubModuleFromSelection(EDIT_MODULE);
+
+  const startFilteredMainBtn = document.getElementById('startFilteredMainBtn');
+  if(startFilteredMainBtn) startFilteredMainBtn.onclick = ()=>{
+    if(!COLOR_FILTER) return;
+    CUR_MODULE = EDIT_MODULE;
+    startStep(null, COLOR_FILTER);
+  };
+
+  document.querySelectorAll('[data-substart-filtered]').forEach(el=>{
+    el.onclick = ()=>{
+      const subId = el.dataset.substartFiltered;
+      const filter = COLOR_FILTER_BULK[subId];
+      if(!filter) return;
+      CUR_MODULE = EDIT_MODULE;
+      startStep(subId, filter);
+    };
+  });
+
+  document.querySelectorAll('[data-substart-example]').forEach(el=>{
+    el.onclick = ()=>{
+      const subId = el.dataset.substartExample;
+      const m = MODULES[EDIT_MODULE];
+      const sub = (m.subModules||[]).find(s=>s.id===subId);
+      if(!sub) return;
+      const exampleIds = selectedExampleIdsInSub(m, sub);
+      if(exampleIds.length===0){
+        alert('Bu grupta seçili cümleli kelime yok. Önce 📝 çalış butonuyla kelime seçin.');
+        return;
+      }
+      CUR_MODULE = EDIT_MODULE;
+      startStep(null, null, exampleIds);
+    };
+  });
+
+  document.querySelectorAll('[data-substart]').forEach(el=>{
+    el.onclick = ()=>{ CUR_MODULE = EDIT_MODULE; startStep(el.dataset.substart); };
+  });
+  document.querySelectorAll('[data-subadd-toggle]').forEach(el=>{
+    el.onclick = ()=>{ SUB_ADD_OPEN = (SUB_ADD_OPEN===el.dataset.subaddToggle) ? null : el.dataset.subaddToggle; render(); };
+  });
+  document.querySelectorAll('[data-subword-add]').forEach(el=>{
+    el.onclick = ()=> addExistingWordToSubModule(EDIT_MODULE, el.dataset.subwordAddsub, el.dataset.subwordAdd);
+  });
+  document.querySelectorAll('[data-subword-rm]').forEach(el=>{
+    el.onclick = ()=> removeWordFromSubModule(EDIT_MODULE, el.dataset.subwordSub, el.dataset.subwordRm);
+  });
+  document.querySelectorAll('[data-subdel]').forEach(el=>{
+    el.onclick = ()=> deleteSubModule(EDIT_MODULE, el.dataset.subdel);
+  });
+  document.querySelectorAll('[data-subopen]').forEach(el=>{
+    el.onclick = ()=>{
+      const id = el.dataset.subopen;
+      if(SUB_OPEN_IDS.has(id)){
+        SUB_OPEN_IDS.delete(id);
+        if(SUB_ADD_OPEN===id) SUB_ADD_OPEN=null;
+        if(RENAME_SUB_ID===id) RENAME_SUB_ID=null;
+        if(SEL_BULK_SUBID===id){ SELECTED_BULK_WORDS.clear(); SEL_BULK_SUBID=null; delete BULK_PENDING_COLOR[id]; }
+        if(SEL_SENT_SUBID===id){ SELECTED_SENTENCES.clear(); SEL_SENT_SUBID=null; delete SENT_PENDING_COLOR_PER_GROUP[id]; }
+      } else SUB_OPEN_IDS.add(id);
+      render();
+    };
+  });
+  document.querySelectorAll('[data-subrename]').forEach(el=>{
+    el.onclick = ()=>{ RENAME_SUB_ID = el.dataset.subrename; render(); };
+  });
+  document.querySelectorAll('[data-subrename-cancel]').forEach(el=>{
+    el.onclick = ()=>{ RENAME_SUB_ID = null; render(); };
+  });
+  document.querySelectorAll('[data-subrename-save]').forEach(el=>{
+    el.onclick = ()=>{
+      const subId = el.dataset.subrenameSave;
+      const inp = document.getElementById('renameSubInput');
+      renameSubModule(EDIT_MODULE, subId, inp?inp.value:'');
+    };
+  });
+  const renameSubInputEl = document.getElementById('renameSubInput');
+  if(renameSubInputEl){
+    renameSubInputEl.focus(); renameSubInputEl.select();
+    renameSubInputEl.onkeydown = (e)=>{
+      if(e.key==='Enter'){ e.preventDefault(); renameSubModule(EDIT_MODULE, RENAME_SUB_ID, renameSubInputEl.value); }
+      if(e.key==='Escape'){ e.preventDefault(); RENAME_SUB_ID=null; render(); }
+    };
+  }
+
+  document.querySelectorAll('[data-colorpick]').forEach(el=>{
+    el.onclick = (e)=>{
+      e.stopPropagation();
+      const val = el.dataset.color || null;
+      const scope = el.dataset.colorpick;
+      if(scope==='new'){
+        const d = document.getElementById('newDe'), t = document.getElementById('newTr');
+        const dv = d?d.value:'', tv = t?t.value:'';
+        const bk = document.getElementById('bulkInput'); const bv = bk?bk.value:'';
+        NEW_WORD_COLOR = val; render();
+        const d2 = document.getElementById('newDe'), t2 = document.getElementById('newTr'), b2 = document.getElementById('bulkInput');
+        if(d2) d2.value = dv; if(t2) t2.value = tv; if(b2) b2.value = bv;
+      } else if(scope==='sent-new'){
+        const bk = document.getElementById('bulkSentInput'); const bv = bk?bk.value:'';
+        SENTENCE_PENDING_COLOR = val; render();
+        const b2 = document.getElementById('bulkSentInput');
+        if(b2) b2.value = bv;
+      } else if(scope==='quick'){
+        const w = MODULES[EDIT_MODULE].words.find(x=>x.id===QUICK_COLOR_ID);
+        if(w){ w.color = val; saveProgress(); }
+        QUICK_COLOR_ID = null; render();
+      } else if(scope==='edit'){
+        const d = document.getElementById('editDe'), t = document.getElementById('editTr');
+        const dv = d?d.value:'', tv = t?t.value:'';
+        EDIT_WORD_COLOR = val; render();
+        const d2 = document.getElementById('editDe'), t2 = document.getElementById('editTr');
+        if(d2) d2.value = dv; if(t2) t2.value = tv;
+      } else if(scope.startsWith('bulksel-')){
+        const subId = scope.replace('bulksel-','');
+        BULK_PENDING_COLOR[subId] = val;
+        render();
+      } else if(scope==='mainsel'){
+        MAIN_PENDING_COLOR = val;
+        render();
+      } else if(scope.startsWith('sentsel-')){
+        const subId = scope.replace('sentsel-','');
+        SENT_PENDING_COLOR_PER_GROUP[subId] = val;
+        render();
+      } else if(scope.startsWith('sentquick-')){
+        const sentId = scope.replace('sentquick-','');
+        const m = MODULES[EDIT_MODULE];
+        for(const sub of (m.subModules||[])){
+          if(sub.kind === 'sentence'){
+            const sc = (sub.sentences||[]).find(x=>x.id===sentId);
+            if(sc){ sc.color = val; break; }
+          }
+        }
+        QUICK_SENT_COLOR_ID = null;
+        saveProgress().then(()=>render());
+      }
+    };
+  });
+  document.querySelectorAll('[data-quickcolor]').forEach(el=>{
+    el.onmousedown = el.ontouchstart = (e)=> e.stopPropagation();
+    el.onclick = (e)=>{ e.stopPropagation(); QUICK_COLOR_ID = (QUICK_COLOR_ID===el.dataset.quickcolor) ? null : el.dataset.quickcolor; render(); };
+  });
+  document.querySelectorAll('[data-colorfilter]').forEach(el=>{
+    el.onclick = ()=>{ COLOR_FILTER = el.dataset.colorfilter || null; render(); };
+  });
+  document.querySelectorAll('[data-bulk-colorfilter]').forEach(el=>{
+    el.onclick = ()=>{
+      const subId = el.dataset.bulkColorfilter;
+      COLOR_FILTER_BULK[subId] = el.dataset.cf || null;
+      render();
+    };
+  });
+  document.querySelectorAll('[data-bulk-word]').forEach(el=>{
+    el.onclick = (e)=>{
+      if(e.target.closest('button, [data-quickcolor]')) return;
+      toggleBulkSelection(el.dataset.bulkSub, el.dataset.bulkWord);
+    };
+  });
+  document.querySelectorAll('[data-bulk-word-rm]').forEach(el=>{
+    el.onmousedown = el.ontouchstart = (e)=> e.stopPropagation();
+    el.onclick = (e)=>{ e.stopPropagation(); removeWordFromSubModule(EDIT_MODULE, el.dataset.bulkSub, el.dataset.bulkWordRm); };
+  });
+  document.querySelectorAll('[data-bulk-clearsel]').forEach(el=>{
+    el.onclick = ()=> clearBulkSelection(el.dataset.bulkClearsel);
+  });
+  document.querySelectorAll('[data-bulk-download]').forEach(el=>{
+    el.onclick = ()=> downloadBulkGroupAsTxt(EDIT_MODULE, el.dataset.bulkDownload);
+  });
+  document.querySelectorAll('[data-bulk-selectall]').forEach(el=>{
+    el.onclick = ()=> selectAllBulkWords(el.dataset.bulkSelectall);
+  });
+  document.querySelectorAll('[data-bulk-makerepeat]').forEach(el=>{
+    el.onclick = ()=> createRepeatFromBulkSelection(EDIT_MODULE, el.dataset.bulkMakerepeat);
+  });
+  document.querySelectorAll('[data-bulk-savecolor]').forEach(el=>{
+    el.onclick = async ()=>{
+      const subId = el.dataset.bulkSavecolor;
+      if(BULK_PENDING_COLOR[subId] === undefined) return;
+      const color = BULK_PENDING_COLOR[subId];
+      delete BULK_PENDING_COLOR[subId];
+      await assignColorToBulkSelection(subId, color);
+    };
+  });
+  document.querySelectorAll('[data-main-savecolor]').forEach(el=>{
+    el.onclick = async ()=>{
+      if(MAIN_PENDING_COLOR === undefined) return;
+      const color = MAIN_PENDING_COLOR;
+      MAIN_PENDING_COLOR = undefined;
+      await assignColorToMainSelection(color);
+    };
+  });
+  document.querySelectorAll('[data-main-clearsel]').forEach(el=>{
+    el.onclick = ()=> clearSelection();
+  });
+
+  const newWordToggleBtn = document.getElementById('newWordToggleBtn');
+  if(newWordToggleBtn) newWordToggleBtn.onclick = ()=>{ NEW_WORD_OPEN = !NEW_WORD_OPEN; render(); };
+  const bulkToggleBtn = document.getElementById('bulkToggleBtn');
+  if(bulkToggleBtn) bulkToggleBtn.onclick = ()=>{ BULK_ADD_OPEN = !BULK_ADD_OPEN; render(); };
+  const bulkBtn = document.getElementById('bulkAddBtn');
+  const bulkMainBtn = document.getElementById('bulkAddMainBtn');
+  const bulkInp = document.getElementById('bulkInput');
+  if(bulkBtn) bulkBtn.onclick = async ()=>{
+    const before = MODULES[EDIT_MODULE] ? MODULES[EDIT_MODULE].words.length : 0;
+    await bulkAddWordsToModule(EDIT_MODULE, bulkInp ? bulkInp.value : '', false);
+    const after = MODULES[EDIT_MODULE] ? MODULES[EDIT_MODULE].words.length : 0;
+    if(after > before){ BULK_ADD_OPEN = false; render(); }
+  };
+  if(bulkMainBtn) bulkMainBtn.onclick = async ()=>{
+    const before = MODULES[EDIT_MODULE] ? MODULES[EDIT_MODULE].words.length : 0;
+    await bulkAddWordsToModule(EDIT_MODULE, bulkInp ? bulkInp.value : '', true);
+    const after = MODULES[EDIT_MODULE] ? MODULES[EDIT_MODULE].words.length : 0;
+    if(after > before){ BULK_ADD_OPEN = false; render(); }
+  };
+  const addBtn = document.getElementById('addWordBtn');
+  const deInp = document.getElementById('newDe');
+  const trInp = document.getElementById('newTr');
+  const submit = ()=>{ addWordToModule(EDIT_MODULE, deInp.value, trInp.value); };
+  if(addBtn) addBtn.onclick = submit;
+  [deInp, trInp].forEach(inp=>{
+    if(inp) inp.onkeydown = (e)=>{ if(e.key==='Enter'){ e.preventDefault(); submit(); } };
+  });
+}
+
+/* ---------------- DERS ---------------- */
+function startStep(subId, colorFilter, exampleWordIds, exampleStartStepIdx){
+  CUR_SUBMODULE = subId || null;
+  const mod = MODULES[CUR_MODULE];
+  if(!mod){ SCREEN='list'; render(); return; }
+  const sub = CUR_SUBMODULE ? (mod.subModules||[]).find(s=>s.id===CUR_SUBMODULE) : null;
+
+  let effectiveWords;
+  const isExampleMode = !!(exampleWordIds && exampleWordIds.length > 0);
+  if(isExampleMode){
+    const idSet = new Set(exampleWordIds);
+    effectiveWords = mod.words.filter(w => idSet.has(w.id));
+  } else if(sub){
+    effectiveWords = mod.words.filter(w => (sub.wordIds||[]).includes(w.id));
+  } else {
+    effectiveWords = mainWords(mod);
+  }
+  if(colorFilter){
+    effectiveWords = effectiveWords.filter(w => colorFilter==='none' ? !w.color : w.color===colorFilter);
+  }
+  if(effectiveWords.length===0){
+    if(colorFilter){
+      alert('Bu renkte ('+colorFilterLabel(colorFilter)+') hiç kelime yok.');
+    } else if(isExampleMode){
+      alert('Seçili cümleli kelimeler bulunamadı.');
+    } else {
+      alert(sub ? 'Bu gruptaki kelimeler silinmiş.' : 'Bu modülde henüz kelime yok.');
+    }
+    SCREEN = sub ? 'edit' : 'list';
+    CUR_SUBMODULE = null;
+    render();
+    return;
+  }
+
+  let stageList, stageIdx, step, rep;
+  if(isExampleMode){
+    stageList = EXAMPLE_STAGE_TYPES;
+    step = (typeof exampleStartStepIdx === 'number') ? exampleStartStepIdx : 0;
+    if(step >= EXAMPLE_STEPS_PER_MODULE) step = EXAMPLE_STEPS_PER_MODULE - 1;
+    if(step < 0) step = 0;
+    stageIdx = step % stageList.length;
+    rep = Math.floor(step / stageList.length);
+  } else {
+    stageList = STAGE_TYPES;
+    const prog = PROGRESS[mod.id];
+    step = prog.step;
+    if(step >= STEPS_PER_MODULE) step = STEPS_PER_MODULE - 1;
+    stageIdx = step % stageList.length;
+    rep = Math.floor(step / stageList.length);
+  }
+  const stageType = stageList[stageIdx];
+  const seed = step*7+13;
+  const order = seededShuffle(effectiveWords, seed);
+  session = {
+    mod, step, stageIdx, stageType, stageList, rep, seed, order, subModuleId: CUR_SUBMODULE,
+    mode: isExampleMode ? 'example' : 'main',
+    colorFilter: colorFilter || null,
+    exampleMode: isExampleMode,
+    exampleWordIds: isExampleMode ? exampleWordIds.slice() : null,
+    idx:0, correctCount:0, wrongCount:0,
+    inputVal:'', feedback:null, feedbackType:null,
+    selectedLeft:null, matched:[], leftShuffled:null, rightShuffled:null,
+    wrongFlashKey:null,
+    mcSelected:null, mcResolved:false, mcOptions:null
+  };
+  SCREEN = 'lesson';
+  render();
+}
+
+function startSentenceStep(idx, subId, sentenceIds, colorFilter, startStepIdx){
+  const m = MODULES[idx];
+  if(!m) return;
+  const sub = sentOwner(m, subId);
+  if(!sub) return;
+  let effective = (sub.sentences||[]).filter(sc => sentenceIds.includes(sc.id));
+  if(colorFilter) effective = effective.filter(sc => colorFilter==='none' ? !sc.color : sc.color===colorFilter);
+  if(effective.length === 0){ alert('Çalışılacak cümle bulunamadı.'); return; }
+  if(!sub.progress) sub.progress = { step: 0 };
+
+  let step = (typeof startStepIdx === 'number') ? startStepIdx : (typeof sub.progress.step === 'number' ? sub.progress.step : 0);
+  if(step >= SENTENCE_STEPS_PER_MODULE) step = 0;
+
+  const stageIdx = step % SENTENCE_STAGE_TYPES.length;
+  const rep = Math.floor(step / SENTENCE_STAGE_TYPES.length);
+  const stageType = SENTENCE_STAGE_TYPES[stageIdx];
+  const seed = step * 7 + 13;
+  const order = seededShuffle(effective, seed);
+
+  session = {
+    mode: 'sentence',
+    moduleIdx: idx,
+    subId,
+    sentenceIds: sentenceIds.slice(),
+    colorFilter: colorFilter || null,
+    step, stageIdx, stageType, rep, seed, order,
+    idx: 0, correctCount: 0, wrongCount: 0,
+    inputVal: '', feedback: null, feedbackType: null,
+    mcOptions: null, mcResolved: false, mcSelected: null
+  };
+  SCREEN = 'lesson';
+  render();
+}
+
+function renderLesson(){
+  if(session && session.mode === 'sentence') return renderSentenceLesson();
+  const s = session;
+  const mod = MODULES[CUR_MODULE];
+  const sub = s.subModuleId ? (mod.subModules||[]).find(sm=>sm.id===s.subModuleId) : null;
+  const subIdx = sub ? (mod.subModules||[]).indexOf(sub) : -1;
+
+  let pct, progLbl;
+  if(s.mode === 'example'){
+    pct = exampleProgPct(s.step);
+    progLbl = exampleProgLabel(s.step);
+  } else {
+    const prog = PROGRESS[mod.id];
+    pct = progPct(prog);
+    progLbl = progLabel(prog);
+  }
+
+  let badges = '';
+  if(s.exampleMode){
+    badges += `<span class="stage-badge example-tag">📝 Cümleli</span>`;
+  }
+  if(s.colorFilter){
+    const cfLabel = colorFilterLabel(s.colorFilter);
+    const cfHex = wordColorHex(s.colorFilter);
+    const bg = cfHex || '#8A8F8A';
+    badges += `<span class="stage-badge color-tag" style="background:${bg};">${esc(cfLabel)}</span>`;
+  }
+  badges += `<span class="stage-badge">${s.stageType}</span>`;
+
+  let head = `
+  <div class="lesson-head">
+    <div class="lesson-head-row">
+      <span class="back-link" id="backBtn">← Modüller</span>
+      <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
+        ${badges}
+      </div>
+    </div>
+    <div class="rep-track"><div class="rep-fill" style="width:${pct}%"></div></div>
+    <div style="display:flex;justify-content:space-between;margin-top:6px;">
+      <span class="counter">${esc(moduleLabel(mod,CUR_MODULE))}${sub? ' · '+(subIsBulk(sub)?'📦':'🔁')+' '+esc(subModuleLabel(sub,subIdx,mod)) : ''}${s.colorFilter?' · Sadece '+esc(colorFilterLabel(s.colorFilter)):''} · Tekrar ${s.rep+1}/14</span>
+      <span class="counter">${progLbl}</span>
+    </div>
+  </div>`;
+  let body = '';
+  switch(s.stageType){
+    case 'HÖM': body = renderHOM(s); break;
+    case 'TAHMİN': body = renderGuess(s, s.mode==='example' ? 'de2tr' : (s.rep%2===0 ? 'de2tr' : 'tr2de')); break;
+    case 'TERS': body = renderGuess(s, s.rep%2===0 ? 'tr2de' : 'de2tr'); break;
+    case 'EŞLEŞTİRME': body = renderMatch(s); break;
+    case 'MİNİ TEST': body = renderMiniTest(s); break;
+    case 'CÜMLE': body = renderCumle(s); break;
+  }
+  return head + '<div id="lessonBody">' + body + '</div>';
+}
+
+async function completeStep(){
+  const mod = session.mod;
+  const subIdAtCompletion = session.subModuleId;
+  const colorFilterAtCompletion = session.colorFilter;
+  const exampleIdsAtCompletion = session.exampleMode ? (session.exampleWordIds||[]).slice() : null;
+
+  if(session.mode === 'example'){
+    const nextStep = session.step + 1;
+    if(nextStep >= EXAMPLE_STEPS_PER_MODULE){
+      SCREEN = 'modulecomplete'; render(); return;
+    }
+    if(nextStep % EXAMPLE_STAGE_TYPES.length === 0){
+      LAST_REP = nextStep / EXAMPLE_STAGE_TYPES.length;
+      SCREEN = 'repcomplete'; render(); return;
+    }
+    startStep(subIdAtCompletion, colorFilterAtCompletion, exampleIdsAtCompletion, nextStep);
+    return;
+  }
+
+  const prog = PROGRESS[mod.id];
+  prog.step = Math.min(prog.step+1, STEPS_PER_MODULE);
+  if(prog.step >= STEPS_PER_MODULE) prog.done = true;
+  await saveProgress();
+  if(prog.done){ SCREEN='modulecomplete'; render(); return; }
+  if(prog.step % STAGE_TYPES.length === 0){
+    LAST_REP = prog.step / STAGE_TYPES.length;
+    SCREEN = 'repcomplete'; render(); return;
+  }
+  startStep(subIdAtCompletion, colorFilterAtCompletion, null);
+}
+
+async function completeSentenceStep(){
+  const s = session;
+  if(!s || s.mode !== 'sentence') return;
+  const m = MODULES[s.moduleIdx];
+  if(!m) return;
+  const sub = sentOwner(m, s.subId);
+  if(!sub) return;
+  if(!sub.progress) sub.progress = { step: 0 };
+  const nextStep = s.step + 1;
+
+  if(nextStep >= SENTENCE_STEPS_PER_MODULE){
+    sub.progress.step = 0;
+    await saveProgress();
+    SCREEN = 'modulecomplete';
+    render();
+    return;
+  }
+
+  sub.progress.step = nextStep;
+  await saveProgress();
+
+  if(nextStep % SENTENCE_STAGE_TYPES.length === 0){
+    LAST_REP = nextStep / SENTENCE_STAGE_TYPES.length;
+    SCREEN = 'repcomplete';
+    render();
+    return;
+  }
+
+  startSentenceStep(s.moduleIdx, s.subId, s.sentenceIds, s.colorFilter, nextStep);
+}
+
+function renderRepComplete(){
+  const isSent = session && session.mode === 'sentence';
+  const isEx = session && session.mode === 'example';
+  return `
+  <div class="complete-wrap">
+    <span class="eyebrow">Tekrar tamamlandı${isSent ? ' · Cümle Grubu' : ''}${isEx ? ' · Cümleli' : ''}</span>
+    <h2>${LAST_REP}. tekrar bitti ✓</h2>
+    <p>14 tekrarın ${LAST_REP} tanesini tamamladın.</p>
+    <div class="btn-row"><button class="btn btn-primary" id="repContinueBtn">Tamam, devam et</button></div>
+  </div>`;
+}
+function attachRepCompleteEvents(){
+  const b = document.getElementById('repContinueBtn');
+  if(!b) return;
+  if(session && session.mode === 'sentence'){
+    const s = session;
+    const nextStep = s.step + 1;
+    b.onclick = ()=> startSentenceStep(s.moduleIdx, s.subId, s.sentenceIds, s.colorFilter, nextStep);
+    return;
+  }
+  const cf = session ? session.colorFilter : null;
+  const exIds = session && session.mode === 'example' ? (session.exampleWordIds||[]).slice() : null;
+  const isEx = session && session.mode === 'example';
+  const nextStep = session ? session.step + 1 : 0;
+  const sid = CUR_SUBMODULE;
+  b.onclick = ()=>{
+    if(isEx){ startStep(sid, cf, exIds, nextStep); }
+    else { startStep(sid, cf, exIds); }
+  };
+}
+
+function renderSentenceLesson(){
+  const s = session;
+  const m = MODULES[s.moduleIdx];
+  const sub = sentOwner(m, s.subId);
+  const pct = sentenceProgPct(s.step);
+  const progLbl = sentenceProgLabel(s.step);
+  const subName = sub ? subModuleLabel(sub, (m.subModules||[]).indexOf(sub), m) : 'Cümle Grubu';
+
+  let badges = `<span class="stage-badge example-tag">Cümle Grubu</span><span class="stage-badge">${s.stageType}</span>`;
+  if(s.colorFilter){
+    const cfHex = wordColorHex(s.colorFilter);
+    const bg = cfHex || '#8A8F8A';
+    badges += `<span class="stage-badge color-tag" style="background:${bg};">${esc(colorFilterLabel(s.colorFilter))}</span>`;
+  }
+
+  let head = `
+  <div class="lesson-head">
+    <div class="lesson-head-row">
+      <span class="back-link" id="backBtn">← Modüller</span>
+      <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">${badges}</div>
+    </div>
+    <div class="rep-track"><div class="rep-fill" style="width:${pct}%"></div></div>
+    <div style="display:flex;justify-content:space-between;margin-top:6px;">
+      <span class="counter">${esc(moduleLabel(m, s.moduleIdx))} · ${esc(subName)} · Tekrar ${s.rep+1}/${REPS}</span>
+      <span class="counter">${progLbl}</span>
+    </div>
+  </div>`;
+
+  let body = '';
+  switch(s.stageType){
+    case 'HÖM': body = renderSentenceHOM(s); break;
+    case 'TAHMİN': body = renderSentenceGuess(s, 'de2tr'); break;
+    case 'TERS': body = renderSentenceGuess(s, 'tr2de'); break;
+    case 'MİNİ TEST': body = renderSentenceMiniTest(s); break;
+  }
+  return head + '<div id="lessonBody">' + body + '</div>';
+}
+
+function renderSentenceHOM(s){
+  const sc = s.order[s.idx];
+  const scHex = wordColorHex(sc.color);
+  const cardStyle = scHex ? `border-left:5px solid ${scHex}; background-color:${hexToRgbA(scHex, 0.08)};` : '';
+  const isLast = s.idx >= s.order.length - 1;
+  const chipName = (WORD_COLORS.find(c=>c.key===sc.color)||{}).name || '';
+  return `
+  <div class="stage-card" style="${cardStyle}">
+    <span class="hint">Cümleyi oku, anlamıyla birlikte hafızana kazı</span>
+    ${scHex ? `<div><span class="color-chip" style="background:${scHex};">${esc(chipName)}</span></div>` : ''}
+    <div class="hom-word-block">
+      <div style="font-size:clamp(16px, 3.8vw, 22px);font-style:italic;font-weight:600;line-height:1.45;${deColorStyle(scHex)}word-break:break-word;overflow-wrap:anywhere;margin-bottom:14px;">${esc(sc.de)}</div>
+      <div style="font-size:clamp(14px, 3.2vw, 18px);color:var(--teal-dark);font-weight:500;line-height:1.45;word-break:break-word;overflow-wrap:anywhere;">${esc(sc.tr)}</div>
+    </div>
+    <div class="ring-wrap">
+      <svg viewBox="0 0 100 100">
+        <circle class="ring-bg" cx="50" cy="50" r="44"></circle>
+        <circle class="ring-fg" id="ringFg" cx="50" cy="50" r="44" stroke-dasharray="276" stroke-dashoffset="0"></circle>
+      </svg>
+      <div class="ring-center"><div class="counter" style="font-size:12px;">${s.idx+1} / ${s.order.length}</div></div>
+    </div>
+    <div class="btn-row"><button class="btn btn-ghost" id="homSkip">${isLast ? 'Bitir' : 'Sonrakine geç'}</button></div>
+  </div>`;
+}
+
+function renderSentenceGuess(s, mode){
+  if(s.idx >= s.order.length) return renderSentencePassSummary(s);
+  const sc = s.order[s.idx];
+  const scHex = wordColorHex(sc.color);
+  const cardStyle = scHex ? `border-left:5px solid ${scHex}; background-color:${hexToRgbA(scHex, 0.08)};` : '';
+  const prompt = mode === 'de2tr' ? sc.de : sc.tr;
+  const promptStyle = mode === 'de2tr' ? deColorStyle(scHex) : '';
+  const dirLabel = mode === 'de2tr' ? 'Almanca cümleyi Türkçeye çevir' : 'Türkçe cümleyi Almancaya çevir';
+  const chipName = (WORD_COLORS.find(c=>c.key===sc.color)||{}).name || '';
+  return `
+  <div class="stage-card" style="${cardStyle}">
+    <span class="hint">${dirLabel}</span>
+    ${scHex ? `<div><span class="color-chip" style="background:${scHex};">${esc(chipName)}</span></div>` : ''}
+    <div style="font-size:clamp(15px, 3.4vw, 21px);font-style:italic;font-weight:600;line-height:1.45;${promptStyle}word-break:break-word;overflow-wrap:anywhere;max-width:100%;">${esc(prompt)}</div>
+    <div class="input-row">
+      <input type="text" id="guessInput" autocomplete="off" placeholder="${mode==='de2tr'?'Türkçe çevirisini yaz...':'Almanca cümleyi yaz...'}" value="${esc(s.inputVal||'')}" ${s.feedback?'disabled':''}>
+    </div>
+    <div class="feedback ${s.feedbackType||''}">${esc(s.feedback||'')}</div>
+    <div class="btn-row">
+      ${s.feedback ? '<button class="btn btn-primary" id="guessNext">Devam et</button>' : '<button class="btn btn-primary" id="guessCheck">Kontrol et</button>'}
+    </div>
+    <div class="counter" style="display:flex;align-items:center;gap:6px;justify-content:center;">
+      ${scHex?`<span class="lesson-color-dot" style="background:${scHex};"></span>`:''}
+      ${s.idx+1} / ${s.order.length} &nbsp;·&nbsp; Doğru: ${s.correctCount}
+    </div>
+  </div>`;
+}
+
+function renderSentenceMiniTest(s){
+  if(s.idx >= s.order.length) return renderSentencePassSummary(s);
+  const sc = s.order[s.idx];
+  const scHex = wordColorHex(sc.color);
+  const cardStyle = scHex ? `border-left:5px solid ${scHex}; background-color:${hexToRgbA(scHex, 0.08)};` : '';
+  const chipName = (WORD_COLORS.find(c=>c.key===sc.color)||{}).name || '';
+  if(!s.mcOptions || s.mcOptions._forId !== sc.id){
+    const pool = s.order.filter(x => x.id !== sc.id);
+    const seen = new Set([sc.tr]);
+    const distractors = [];
+    for(const cand of seededShuffle(pool, s.seed + s.idx + 50)){
+      if(!seen.has(cand.tr)){ seen.add(cand.tr); distractors.push(cand); }
+      if(distractors.length >= 3) break;
+    }
+    const combined = seededShuffle([sc, ...distractors], s.seed + s.idx + 51);
+    s.mcOptions = combined.map(x => ({ id: x.id, text: x.tr }));
+    s.mcOptions._forId = sc.id;
+    s.mcOptions._correctText = sc.tr;
+    s.mcSelected = null; s.mcResolved = false;
+  }
+  const optsHtml = s.mcOptions.map(o => {
+    let cls = '';
+    if(s.mcResolved){
+      if(o.text === s.mcOptions._correctText) cls = 'correct';
+      else if(o.text === s.mcSelected) cls = 'wrong';
+    }
+    return `<div class="mc-opt ${cls} ${s.mcResolved?'disabled':''}" data-opt-text="${esc(o.text)}" style="font-size:12.5px;line-height:1.4;text-align:left;">${esc(o.text)}</div>`;
+  }).join('');
+  return `
+  <div class="stage-card" style="${cardStyle}">
+    <span class="hint">Doğru Türkçe karşılığı seç</span>
+    ${scHex ? `<div><span class="color-chip" style="background:${scHex};">${esc(chipName)}</span></div>` : ''}
+    <div style="font-size:clamp(15px, 3.2vw, 20px);font-style:italic;font-weight:600;line-height:1.45;${deColorStyle(scHex)}word-break:break-word;overflow-wrap:anywhere;margin-bottom:4px;">${esc(sc.de)}</div>
+    <div class="mc-grid" style="grid-template-columns:1fr;">${optsHtml}</div>
+    <div class="counter" style="display:flex;align-items:center;gap:6px;justify-content:center;">
+      ${scHex?`<span class="lesson-color-dot" style="background:${scHex};"></span>`:''}
+      ${s.idx+1} / ${s.order.length} &nbsp;·&nbsp; Doğru: ${s.correctCount}
+    </div>
+    ${s.mcResolved ? '<div class="btn-row"><button class="btn btn-primary" id="testNext">Devam et</button></div>' : ''}
+  </div>`;
+}
+
+function renderSentencePassSummary(s){
+  const total = s.order.length;
+  const pct = total > 0 ? Math.round((s.correctCount / total) * 100) : 0;
+  return `
+  <div class="stage-card">
+    <h2 style="font-size:22px;">Bu geçiş tamam</h2>
+    <div class="score-tag" style="color:${pct>=70?'var(--green)':'var(--coral)'}">${s.correctCount}/${total} doğru (%${pct})</div>
+    <div class="btn-row"><button class="btn btn-primary" id="passContinue">Devam et</button></div>
+  </div>`;
+}
+
+function attachSentenceLessonEvents(){
+  const back = document.getElementById('backBtn');
+  if(back) back.onclick = goList;
+  const s = session;
+  switch(s.stageType){
+    case 'HÖM': attachSentenceHOM(); break;
+    case 'TAHMİN': (s.idx >= s.order.length) ? attachSentencePassSummary() : attachSentenceGuess('de2tr'); break;
+    case 'TERS': (s.idx >= s.order.length) ? attachSentencePassSummary() : attachSentenceGuess('tr2de'); break;
+    case 'MİNİ TEST': (s.idx >= s.order.length) ? attachSentencePassSummary() : attachSentenceMiniTest(); break;
+  }
+}
+
+function attachSentenceHOM(){
+  const dur = 3800;
+  const circumference = 276;
+  const start = Date.now();
+  const ring = document.getElementById('ringFg');
+  let done = false;
+  const tick = ()=>{
+    if(done || !session || session.mode !== 'sentence') return;
+    const elapsed = Date.now() - start;
+    const frac = Math.min(elapsed / dur, 1);
+    if(ring) ring.setAttribute('stroke-dashoffset', String(circumference * frac));
+    if(frac >= 1){ done = true; advanceSentenceHOM(); }
+  };
+  activeTimer = setInterval(tick, 60);
+  const skip = document.getElementById('homSkip');
+  if(skip) skip.onclick = ()=>{ if(done) return; done = true; advanceSentenceHOM(); };
+}
+function advanceSentenceHOM(){
+  clearActiveTimer();
+  if(!session || session.mode !== 'sentence') return;
+  if(session.idx >= session.order.length - 1){ completeSentenceStep(); return; }
+  session.idx += 1;
+  const bodyEl = document.getElementById('lessonBody');
+  if(bodyEl){
+    bodyEl.innerHTML = renderSentenceHOM(session);
+    attachSentenceHOM();
+  } else {
+    render();
+  }
+}
+
+function attachSentenceGuess(mode){
+  const input = document.getElementById('guessInput');
+  if(input){
+    input.focus();
+    input.oninput = (e)=>{ session.inputVal = e.target.value; };
+    input.onkeydown = (e)=>{ if(e.key==='Enter'){ e.preventDefault(); checkSentenceGuess(mode); } };
+  }
+  const chk = document.getElementById('guessCheck');
+  if(chk) chk.onclick = ()=> checkSentenceGuess(mode);
+  const nxt = document.getElementById('guessNext');
+  if(nxt){
+    nxt.onclick = ()=> nextSentenceGuess();
+    KEY_HANDLER = (e)=>{ if(e.key==='Enter'){ e.preventDefault(); clearKeyHandler(); nextSentenceGuess(); } };
+    document.addEventListener('keydown', KEY_HANDLER);
+  }
+}
+function checkSentenceGuess(mode){
+  const s = session;
+  const sc = s.order[s.idx];
+  const input = s.inputVal || '';
+  let correct = false;
+  let correctVal = '';
+  if(mode === 'de2tr'){
+    correct = looseTrMatch(input, sc.tr);
+    correctVal = sc.tr;
+  } else {
+    correct = looseDeMatch(input, sc.de);
+    correctVal = sc.de;
+  }
+  if(correct){
+    s.correctCount++;
+    s.feedback = 'Doğru! ✓';
+    s.feedbackType = 'ok';
+  } else {
+    s.wrongCount++;
+    s.feedback = 'Doğru cevap: ' + correctVal;
+    s.feedbackType = 'bad';
+  }
+  render();
+}
+function nextSentenceGuess(){
+  session.idx++;
+  session.inputVal = '';
+  session.feedback = null;
+  session.feedbackType = null;
+  render();
+}
+function attachSentencePassSummary(){
+  const b = document.getElementById('passContinue');
+  if(b) b.onclick = ()=> completeSentenceStep();
+}
+function attachSentenceMiniTest(){
+  document.querySelectorAll('.mc-opt').forEach(el=>{
+    el.onclick = ()=>{
+      if(session.mcResolved) return;
+      session.mcSelected = el.dataset.optText;
+      session.mcResolved = true;
+      if(session.mcSelected === session.mcOptions._correctText){ session.correctCount++; }
+      else { session.wrongCount++; }
+      render();
+    };
+  });
+  const nxt = document.getElementById('testNext');
+  if(nxt) nxt.onclick = ()=>{ session.idx++; session.mcOptions = null; render(); };
+  const cont = document.getElementById('testContinue');
+  if(cont) cont.onclick = ()=> completeSentenceStep();
+  const skip = document.getElementById('testSkip');
+  if(skip) skip.onclick = ()=> completeSentenceStep();
+}
+
+function renderHOM(s){
+  const words = s.order;
+  const w = words[s.idx];
+  const wHex = wordColorHex(w.color);
+  const cardStyle = wHex ? `border-left:5px solid ${wHex}; background-color:${hexToRgbA(wHex, 0.08)};` : '';
+  const isLast = s.idx >= words.length-1;
+  return `
+  <div class="stage-card" style="${cardStyle}">
+    <span class="hint">Kartı odakla, kelime ve anlamı hafızana kazı</span>
+    ${wHex ? `<div>${wordChipHtml(w)}</div>` : ''}
+    <div class="hom-word-block">
+      <div class="word-de" style="${deColorStyle(wHex)}">${esc(w.de)}</div>
+      <div class="word-tr">${esc(w.tr[0])}</div>
+      ${exampleDisplayHtml(w, 'big', s.rep)}
+    </div>
+    <div class="ring-wrap">
+      <svg viewBox="0 0 100 100">
+        <circle class="ring-bg" cx="50" cy="50" r="44"></circle>
+        <circle class="ring-fg" id="ringFg" cx="50" cy="50" r="44" stroke-dasharray="276" stroke-dashoffset="0"></circle>
+      </svg>
+      <div class="ring-center"><div class="counter" style="font-size:12px;">${s.idx+1} / ${words.length}</div></div>
+    </div>
+    <div class="btn-row"><button class="btn btn-ghost" id="homSkip">${isLast?'Bitir':'Sonrakine geç'}</button></div>
+  </div>`;
+}
+function attachHOM(){
+  const dur = 2600;
+  const circumference = 276;
+  const start = Date.now();
+  const ring = document.getElementById('ringFg');
+  let done = false;
+  const tick = ()=>{
+    if(done || !session) return;
+    const elapsed = Date.now()-start;
+    const frac = Math.min(elapsed/dur,1);
+    if(ring) ring.setAttribute('stroke-dashoffset', String(circumference*frac));
+    if(frac>=1){ done = true; advanceHOM(); }
+  };
+  activeTimer = setInterval(tick, 60);
+  const skip = document.getElementById('homSkip');
+  if(skip) skip.onclick = ()=>{ if(done) return; done = true; advanceHOM(); };
+}
+function advanceHOM(){
+  clearActiveTimer();
+  if(!session) return;
+  if(session.idx >= session.order.length-1){ completeStep(); return; }
+  session.idx += 1;
+  const bodyEl = document.getElementById('lessonBody');
+  if(bodyEl){
+    bodyEl.innerHTML = renderHOM(session);
+    attachHOM();
+  } else { render(); }
+}
+
+function renderGuess(s, mode){
+  const words = s.order;
+  if(s.idx >= words.length){ return renderPassSummary(s); }
+  const w = words[s.idx];
+  const wHex = wordColorHex(w.color);
+  const cardStyle = wHex ? `border-left:5px solid ${wHex}; background-color:${hexToRgbA(wHex, 0.08)};` : '';
+  const prompt = mode==='de2tr' ? w.de : w.tr[0];
+  const promptStyle = (mode==='de2tr') ? deColorStyle(wHex) : '';
+  const dirLabel = mode==='de2tr' ? 'Almancasını gördün, Türkçesini yaz' : 'Türkçesini gördün, Almancasını yaz';
+  return `
+  <div class="stage-card" style="${cardStyle}">
+    <span class="hint">${dirLabel}</span>
+    ${wHex ? `<div>${wordChipHtml(w)}</div>` : ''}
+    <div class="word-de" style="${promptStyle}">${esc(prompt)}</div>
+    <div class="input-row">
+      <input type="text" id="guessInput" autocomplete="off" placeholder="Cevabını yaz..." value="${esc(s.inputVal||'')}" ${s.feedback?'disabled':''}>
+    </div>
+    <div class="feedback ${s.feedbackType||''}">${esc(s.feedback||'')}</div>
+    ${s.feedback ? exampleDisplayHtml(w, s.exampleMode ? 'big' : '', s.rep) : ''}
+    <div class="btn-row">
+      ${s.feedback ? '<button class="btn btn-primary" id="guessNext">Devam et</button>' : '<button class="btn btn-primary" id="guessCheck">Kontrol et</button>'}
+    </div>
+    <div class="counter" style="display:flex;align-items:center;gap:6px;justify-content:center;">
+      ${wHex?`<span class="lesson-color-dot" style="background:${wHex};"></span>`:''}
+      ${s.idx+1} / ${words.length} &nbsp;·&nbsp; Doğru: ${s.correctCount}
+    </div>
+  </div>`;
+}
+function attachGuess(mode){
+  const input = document.getElementById('guessInput');
+  if(input){
+    input.focus();
+    input.oninput = (e)=>{ session.inputVal = e.target.value; };
+    input.onkeydown = (e)=>{ if(e.key==='Enter'){ e.preventDefault(); checkGuess(mode); } };
+  }
+  const chk = document.getElementById('guessCheck');
+  if(chk) chk.onclick = ()=> checkGuess(mode);
+  const nxt = document.getElementById('guessNext');
+  if(nxt){
+    nxt.onclick = ()=> nextGuess();
+    KEY_HANDLER = (e)=>{ if(e.key==='Enter'){ e.preventDefault(); clearKeyHandler(); nextGuess(); } };
+    document.addEventListener('keydown', KEY_HANDLER);
+  }
+}
+function checkGuess(mode){
+  const s = session;
+  const w = s.order[s.idx];
+  let correct, correctAnswer;
+  if(mode==='de2tr'){
+    correct = isCorrectTr(s.inputVal, w.tr);
+    correctAnswer = w.tr.join(' / ');
+  } else {
+    correct = normalizeDe(s.inputVal)===normalizeDe(w.de);
+    correctAnswer = w.de;
+  }
+  if(correct){
+    s.correctCount++;
+    s.feedback = 'Doğru! ✓'; s.feedbackType = 'ok';
+  } else {
+    s.wrongCount++;
+    w.errors = (w.errors||0)+1;
+    saveProgress();
+    s.feedback = 'Doğru cevap: '+correctAnswer; s.feedbackType = 'bad';
+  }
+  render();
+}
+function nextGuess(){
+  session.idx++; session.inputVal=''; session.feedback=null; session.feedbackType=null;
+  render();
+}
+function renderPassSummary(s){
+  const total = s.order.length;
+  const pct = Math.round((s.correctCount/total)*100);
+  return `
+  <div class="stage-card">
+    <h2 style="font-size:22px;">Bu geçiş tamam</h2>
+    <div class="score-tag" style="color:${pct>=70?'var(--green)':'var(--coral)'}">${s.correctCount}/${total} doğru (%${pct})</div>
+    <div class="btn-row"><button class="btn btn-primary" id="passContinue">Devam et</button></div>
+  </div>`;
+}
+function attachPassSummary(){
+  const b = document.getElementById('passContinue');
+  if(b) b.onclick = ()=> completeStep();
+}
+
+function renderMatch(s){
+  if(!s.leftShuffled){
+    s.leftShuffled = seededShuffle(s.order, s.seed+1);
+    s.rightShuffled = seededShuffle(s.order, s.seed+2);
+    s.matched = [];
+    s.selectedLeft = null;
+    s.wrongFlashKey = null;
+  }
+  const done = s.matched.length === s.order.length;
+  const leftHtml = s.leftShuffled.map(w=>{
+    const isMatched = s.matched.includes(w.id);
+    const isSel = s.selectedLeft===w.id;
+    const wHex = wordColorHex(w.color);
+    const cls = isMatched? 'correct' : (isSel? 'selected':'');
+    const style = wHex
+      ? `box-shadow:inset 4px 0 0 ${wHex}; color:${wHex}; background:${hexToRgbA(wHex, 0.13)}; border-left:3px solid ${wHex}; padding-left:10px;`
+      : '';
+    return `<div class="match-tile ${cls}" style="${style}" data-key="${w.id}" data-side="left">${esc(w.de)}</div>`;
+  }).join('');
+  const rightHtml = s.rightShuffled.map(w=>{
+    const isMatched = s.matched.includes(w.id);
+    const wrongFlash = s.wrongFlashKey===w.id;
+    const cls = isMatched? 'correct' : (wrongFlash?'wrong':'');
+    return `<div class="match-tile ${cls}" data-key="${w.id}" data-side="right">${esc(w.tr[0])}</div>`;
+  }).join('');
+  return `
+  <div class="stage-card" style="align-items:stretch;">
+    <span class="hint" style="text-align:center;">Almanca kelimeyi doğru Türkçe anlamıyla eşleştir</span>
+    <div class="match-grid">
+      <div class="match-col">${leftHtml}</div>
+      <div class="match-col">${rightHtml}</div>
+    </div>
+    <div class="counter" style="text-align:center;">${s.matched.length} / ${s.order.length} eşleşti</div>
+    ${done? '<div class="btn-row"><button class="btn btn-primary" id="matchContinue">Devam et</button></div>':''}
+  </div>`;
+}
+function attachMatch(){
+  document.querySelectorAll('.match-tile').forEach(el=>{
+    el.onclick = ()=>{
+      const key = el.dataset.key, side = el.dataset.side;
+      const s = session;
+      if(s.matched.includes(key)) return;
+      if(side==='left'){ s.selectedLeft = key; render(); return; }
+      if(side==='right'){
+        if(!s.selectedLeft) return;
+        if(s.selectedLeft===key){
+          s.matched.push(key);
+          s.selectedLeft=null;
+          render();
+        } else {
+          const w = s.order.find(x=>x.id===s.selectedLeft);
+          if(w){ w.errors = (w.errors||0)+1; saveProgress(); }
+          s.wrongFlashKey = key;
+          render();
+          setTimeout(()=>{ if(!session) return; session.wrongFlashKey=null; session.selectedLeft=null; render(); }, 500);
+        }
+      }
+    };
+  });
+  const cont = document.getElementById('matchContinue');
+  if(cont) cont.onclick = ()=> completeStep();
+}
+
+function renderMiniTest(s){
+  const words = s.order;
+  if(s.idx >= words.length){
+    const total = words.length;
+    const pct = Math.round((s.correctCount/total)*100);
+    const passed = pct>=70;
+    return `
+    <div class="stage-card">
+      <h2 style="font-size:22px;">Mini test sonucu</h2>
+      <div class="score-tag" style="color:${passed?'var(--green)':'var(--coral)'}">${s.correctCount}/${total} doğru (%${pct})</div>
+      <p class="hint">${passed? 'Bu tekrarı başarıyla tamamladın.' : 'Başarı eşiği %70. Tekrar dene.'}</p>
+      <div class="btn-row"><button class="btn btn-primary" id="testContinue">${passed?'Devam et':'Tekrar dene'}</button></div>
+    </div>`;
+  }
+  if(words.length < 2){
+    return `<div class="stage-card">
+      <h2 style="font-size:20px;">Yetersiz Kelime</h2>
+      <p class="hint">Mini test için en az 2 kelime gerekir.</p>
+      <div class="btn-row"><button class="btn btn-primary" id="testSkip">Devam et</button></div>
+    </div>`;
+  }
+  const w = words[s.idx];
+  const wHex = wordColorHex(w.color);
+  const cardStyle = wHex ? `border-left:5px solid ${wHex}; background-color:${hexToRgbA(wHex, 0.08)};` : '';
+  if(!s.mcOptions || s.mcOptions._forId !== w.id){
+    const distractorPool = words.filter(x=>x.id!==w.id);
+    const seenTrs = new Set([w.tr[0]]);
+    const distractors = [];
+    for(const cand of seededShuffle(distractorPool, s.seed+s.idx+50)){
+      const tr = cand.tr[0];
+      if(!seenTrs.has(tr)){ seenTrs.add(tr); distractors.push(cand); }
+      if(distractors.length >= 3) break;
+    }
+    const combined = seededShuffle([w, ...distractors], s.seed+s.idx+51);
+    s.mcOptions = combined.map(x => ({ id: x.id, text: x.tr[0] }));
+    s.mcOptions._forId = w.id;
+    s.mcOptions._correctText = w.tr[0];
+    s.mcSelected = null; s.mcResolved = false;
+  }
+  const optsHtml = s.mcOptions.map(o=>{
+    let cls='';
+    if(s.mcResolved){
+      if(o.text===s.mcOptions._correctText) cls='correct';
+      else if(o.text===s.mcSelected) cls='wrong';
+    }
+    return `<div class="mc-opt ${cls} ${s.mcResolved?'disabled':''}" data-opt-text="${esc(o.text)}">${esc(o.text)}</div>`;
+  }).join('');
+  return `
+  <div class="stage-card" style="${cardStyle}">
+    <span class="hint">Doğru Türkçe karşılığı seç</span>
+    ${wHex ? `<div>${wordChipHtml(w)}</div>` : ''}
+    <div class="word-de" style="${deColorStyle(wHex)}">${esc(w.de)}</div>
+    <div class="mc-grid">${optsHtml}</div>
+    ${s.mcResolved ? exampleDisplayHtml(w, s.exampleMode ? 'big' : '', s.rep) : ''}
+    <div class="counter" style="display:flex;align-items:center;gap:6px;justify-content:center;">
+      ${wHex?`<span class="lesson-color-dot" style="background:${wHex};"></span>`:''}
+      ${s.idx+1} / ${words.length} &nbsp;·&nbsp; Doğru: ${s.correctCount}
+    </div>
+    ${s.mcResolved? '<div class="btn-row"><button class="btn btn-primary" id="testNext">Devam et</button></div>':''}
+  </div>`;
+}
+function attachMiniTest(){
+  document.querySelectorAll('.mc-opt').forEach(el=>{
+    el.onclick = ()=>{
+      if(session.mcResolved) return;
+      session.mcSelected = el.dataset.optText;
+      session.mcResolved = true;
+      if(session.mcSelected===session.mcOptions._correctText){ session.correctCount++; }
+      else {
+        session.wrongCount++;
+        const w = session.order[session.idx];
+        w.errors = (w.errors||0)+1;
+        saveProgress();
+      }
+      render();
+    };
+  });
+  const nxt = document.getElementById('testNext');
+  if(nxt) nxt.onclick = ()=>{ session.idx++; session.mcOptions=null; render(); };
+  const cont = document.getElementById('testContinue');
+  if(cont) cont.onclick = ()=>{
+    const total = session.order.length;
+    const pct = Math.round((session.correctCount/total)*100);
+    if(pct>=70){ completeStep(); }
+    else {
+      session.idx=0; session.correctCount=0; session.wrongCount=0; session.mcOptions=null;
+      render();
+    }
+  };
+  const skip = document.getElementById('testSkip');
+  if(skip) skip.onclick = ()=> completeStep();
+}
+
+function renderCumle(s){
+  const words = s.order;
+  if(s.idx >= words.length){ return renderPassSummary(s); }
+  const w = words[s.idx];
+  const wHex = wordColorHex(w.color);
+  const cardStyle = wHex ? `border-left:5px solid ${wHex}; background-color:${hexToRgbA(wHex, 0.08)};` : '';
+  const exObj = exampleOf(w, s.rep) || { de:'', tr:'' };
+  const exDe = exObj.de || '';
+  const exTr = exObj.tr || '';
+  const hasTr = exTr.trim().length > 0;
+  return `
+  <div class="stage-card" style="${cardStyle}">
+    <span class="hint">Almanca cümleyi Türkçeye çevir</span>
+    ${wHex ? `<div>${wordChipHtml(w)}</div>` : ''}
+    <div style="font-size:12px;color:var(--ink-soft);">"${esc(w.de)}" — ${esc(w.tr[0])}</div>
+    <div class="word-de" style="font-size:clamp(18px, 4vw, 24px);${deColorStyle(wHex)}line-height:1.35;font-style:italic;font-weight:600;word-break:break-word;overflow-wrap:anywhere;">${esc(exDe)}</div>
+    ${hasTr ? `
+    <div class="input-row">
+      <input type="text" id="cumleInput" autocomplete="off" placeholder="Türkçe çevirisini yaz..." value="${esc(s.inputVal||'')}" ${s.feedback?'disabled':''}>
+    </div>
+    <div class="feedback ${s.feedbackType||''}">${esc(s.feedback||'')}</div>
+    <div class="btn-row">
+      ${s.feedback ? '<button class="btn btn-primary" id="cumleNext">Devam et</button>' : '<button class="btn btn-primary" id="cumleCheck">Kontrol et</button>'}
+    </div>` : `
+    <div class="hint">Bu cümlede Türkçe çeviri kayıtlı değil. Sadece cümleyi okuyup devam et.</div>
+    <div class="btn-row"><button class="btn btn-primary" id="cumleNext">Devam et</button></div>`}
+    <div class="counter" style="display:flex;align-items:center;gap:6px;justify-content:center;">
+      ${wHex?`<span class="lesson-color-dot" style="background:${wHex};"></span>`:''}
+      ${s.idx+1} / ${words.length} &nbsp;·&nbsp; Doğru: ${s.correctCount}
+    </div>
+  </div>`;
+}
+function attachCumle(){
+  const input = document.getElementById('cumleInput');
+  if(input){
+    input.focus();
+    input.oninput = (e)=>{ session.inputVal = e.target.value; };
+    input.onkeydown = (e)=>{ if(e.key==='Enter'){ e.preventDefault(); checkCumle(); } };
+  }
+  const chk = document.getElementById('cumleCheck');
+  if(chk) chk.onclick = ()=> checkCumle();
+  const nxt = document.getElementById('cumleNext');
+  if(nxt){
+    nxt.onclick = ()=> nextCumle();
+    KEY_HANDLER = (e)=>{ if(e.key==='Enter'){ e.preventDefault(); clearKeyHandler(); nextCumle(); } };
+    document.addEventListener('keydown', KEY_HANDLER);
+  }
+}
+function checkCumle(){
+  const s = session;
+  const w = s.order[s.idx];
+  const exTr = ((exampleOf(w, s.rep) || {}).tr || '').trim();
+  if(!exTr){ nextCumle(); return; }
+  const correct = looseTrMatch(s.inputVal, exTr);
+  if(correct){
+    s.correctCount++;
+    s.feedback = 'Doğru! ✓'; s.feedbackType = 'ok';
+  } else {
+    s.wrongCount++;
+    w.errors = (w.errors||0)+1;
+    saveProgress();
+    s.feedback = 'Doğru cevap: '+exTr; s.feedbackType = 'bad';
+  }
+  render();
+}
+function nextCumle(){
+  session.idx++; session.inputVal=''; session.feedback=null; session.feedbackType=null;
+  render();
+}
+
+function attachLessonEvents(){
+  if(session && session.mode === 'sentence'){ attachSentenceLessonEvents(); return; }
+  const back = document.getElementById('backBtn');
+  if(back) back.onclick = goList;
+  const s = session;
+  switch(s.stageType){
+    case 'HÖM': attachHOM(); break;
+    case 'TAHMİN': (s.idx>=s.order.length)?attachPassSummary():attachGuess(s.mode==='example' ? 'de2tr' : (s.rep%2===0?'de2tr':'tr2de')); break;
+    case 'TERS': (s.idx>=s.order.length)?attachPassSummary():attachGuess(s.rep%2===0?'tr2de':'de2tr'); break;
+    case 'EŞLEŞTİRME': attachMatch(); break;
+    case 'MİNİ TEST': attachMiniTest(); break;
+    case 'CÜMLE': (s.idx>=s.order.length)?attachPassSummary():attachCumle(); break;
+  }
+}
+
+function renderModuleComplete(){
+  if(session && session.mode === 'sentence'){
+    const m = MODULES[session.moduleIdx];
+    const sub = sentOwner(m, session.subId);
+    const subName = sub ? subModuleLabel(sub, (m.subModules||[]).indexOf(sub), m) : 'Cümle Grubu';
+    return `
+    <div class="complete-wrap">
+      <span class="eyebrow">Cümle grubu tamamlandı</span>
+      <h2>${esc(subName)} ✓</h2>
+      <p>Bu cümle grubunda ${REPS} tekrar döngüsünü (HÖM · TAHMİN · TERS · MİNİ TEST) tamamladın.</p>
+      <div class="btn-row">
+        <button class="btn btn-ghost" id="reviewBtn">Bu modülü incele</button>
+      </div>
+    </div>`;
+  }
+  const mod = MODULES[CUR_MODULE];
+  const nextExists = CUR_MODULE < MODULES.length-1;
+  return `
+  <div class="complete-wrap">
+    <span class="eyebrow">Modül tamamlandı</span>
+    <h2>${esc(moduleLabel(mod,CUR_MODULE))} ✓</h2>
+    <p>${mainWords(mod).length} kelimeyi 14 farklı tekrar döngüsünden geçirdin.</p>
+    <div class="btn-row">
+      <button class="btn btn-ghost" id="reviewBtn">Bu modülü incele</button>
+      ${nextExists? '<button class="btn btn-primary" id="nextModBtn">Sonraki modüle geç</button>' : ''}
+    </div>
+  </div>`;
+}
+function attachCompleteEvents(){
+  const rev = document.getElementById('reviewBtn');
+  if(rev) rev.onclick = ()=>{ SCREEN='list'; CUR_SUBMODULE=null; render(); };
+  if(session && session.mode === 'sentence') return;
+  const nxt = document.getElementById('nextModBtn');
+  if(nxt) nxt.onclick = ()=>{ CUR_MODULE++; SCREEN='list'; CUR_SUBMODULE=null; render(); };
+}
+
+/* =========================================================
+   BAŞLAT
+   ========================================================= */
+async function requestPersistentStorage(){
+  try{ if(navigator.storage && navigator.storage.persist){ await navigator.storage.persist(); } }catch(e){}
+}
+
+window.addEventListener('storage', async (e)=>{
+  if(!isUnlocked_()) return;
+  if(e.key === 'osd:osd_data_v2'){
+    await loadProgress();
+    if(SCREEN==='list' || SCREEN==='edit'){ render(); }
+  }
+});
+
+/* ---------------- ŞİFRE EKRANI ---------------- */
+const PASS_HASH = 'fa3cfb3f1bb823aa9501f88f1f95f732ee6fef2c3a48be7f1d38037b216a549f';
+async function sha256Hex(str){
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+  return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+}
+async function passwordOk(input){
+  try{
+    if(window.crypto && crypto.subtle) return (await sha256Hex(input)) === PASS_HASH;
+  }catch(e){}
+  return input === '1223';
+}
+// Sayfa/sekme/pencere kapanınca (ya da yenilenince) kilit tekrar devreye girer
+window.addEventListener('pagehide', ()=>{ try{ sessionStorage.removeItem('osd_unlocked'); }catch(e){} });
+function isUnlocked_(){ try{ return sessionStorage.getItem('osd_unlocked') === '1'; }catch(e){ return false; } }
+function renderGate(){
+  root.innerHTML = `
+  <div class="stage-card" style="align-items:stretch;text-align:left;max-width:420px;margin:12vh auto 0;min-height:0;">
+    <span class="hint">Şifre</span>
+    <div class="input-row" style="max-width:none;">
+      <input type="password" id="gatePass" inputmode="numeric" autocomplete="off" placeholder="Şifreyi gir">
+    </div>
+  </div>`;
+  const inp = document.getElementById('gatePass');
+  let busy = false;
+  const go = async ()=>{
+    if(busy || !inp.value) return;
+    busy = true;
+    const ok = await passwordOk(inp.value.trim());
+    busy = false;
+    if(ok){
+      try{ sessionStorage.setItem('osd_unlocked','1'); }catch(e){}
+      startApp();
+    } else {
+      inp.value = '';
+      inp.style.borderColor = 'var(--coral)';
+      setTimeout(()=>{ inp.style.borderColor = ''; }, 700);
+      inp.focus();
+    }
+  };
+  inp.oninput = ()=>{ if(inp.value.length >= 4) go(); };
+  inp.onkeydown = (e)=>{ if(e.key==='Enter'){ e.preventDefault(); go(); } };
+  inp.focus();
+}
+if('serviceWorker' in navigator && /^https?:$/.test(location.protocol)){
+  window.addEventListener('load', ()=>{ navigator.serviceWorker.register('./sw.js').catch(()=>{}); });
+}
+let INSTALL_PROMPT = null;
+window.addEventListener('beforeinstallprompt', (e)=>{
+  e.preventDefault();
+  INSTALL_PROMPT = e;
+  if(SCREEN==='list') render();
+});
+window.addEventListener('appinstalled', ()=>{ INSTALL_PROMPT = null; if(SCREEN==='list') render(); });
+async function installApp(){
+  if(!INSTALL_PROMPT) return;
+  const ev = INSTALL_PROMPT; INSTALL_PROMPT = null;
+  try{ await ev.prompt(); await ev.userChoice; }catch(e){}
+  if(SCREEN==='list') render();
+}
+async function startApp(){
+  await requestPersistentStorage();
+  await loadProgress();
+  await tryReconnectLinkedFile();
+  SCREEN = 'list';
+  render();
+}
+(function init(){
+  if(isUnlocked_()) startApp(); else renderGate();
+})();
+</script>
+</body>
+</html>
